@@ -30,32 +30,10 @@ td code{overflow-wrap:anywhere;word-break:break-word}
 td{min-width:90px}
 figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radius:8px;border:1px solid var(--border)}figcaption{font-size:.85rem;color:var(--text2);margin-top:6px}
 .legenda-cores i{display:inline-block;width:12px;height:12px;border:2px solid;vertical-align:-1px;margin:0 3px 0 8px}
-/*menu*/
-.mn{position:sticky;top:0;z-index:50;margin:0;display:block;background:var(--surface,var(--surface-1));border-bottom:1px solid var(--border);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.mn-in{max-width:1100px;margin:0 auto;padding:6px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px}
-.mn a{text-decoration:none;border-bottom:0}
-.mn-marca{font-weight:650;color:var(--text,var(--text-primary));margin-right:10px;padding:6px 0;white-space:nowrap}
-.mn-item{display:inline-block;padding:6px 10px;border-radius:6px;color:var(--text2,var(--text-secondary));cursor:pointer;white-space:nowrap;list-style:none}
-.mn-item::-webkit-details-marker{display:none}
-summary.mn-item::after{content:" ▾";font-size:.8em}
-.mn-item:hover{background:var(--grid);color:var(--text,var(--text-primary))}
-.mn-item[aria-current]{background:var(--accent-soft);color:var(--text,var(--text-primary));font-weight:600}
-.mn-grupo{position:relative}
-.mn-lista{position:absolute;left:0;top:calc(100% + 4px);min-width:260px;max-width:min(440px,90vw);max-height:70vh;overflow:auto;background:var(--surface,var(--surface-1));border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;display:flex;flex-direction:column}
-.mn-lista a{padding:7px 10px;border-radius:5px;color:var(--text,var(--text-primary));font-size:.9rem}
-.mn-lista a:hover{background:var(--grid)}
-.mn-lista a[aria-current]{background:var(--accent-soft);font-weight:600}
-@media (max-width:640px){.mn-marca{width:100%}.mn-grupo{position:static}.mn-lista{left:16px;right:16px;max-width:none}}
-[id]{scroll-margin-top:60px}
-@media print{.mn{display:none}}
-/*/menu*/
 </style>
 </head>
 <body>
-<!--menu-->
-<nav class="mn" aria-label="Navegação do projeto"><div class="mn-in"><a class="mn-marca" href="../resumo_experimentos.html">Leishmania · Doutorado</a><a class="mn-item" href="../resumo_experimentos.html">Resumo</a><a class="mn-item" href="../01_preprocessamento/README.html">Pré-processamento</a><details class="mn-grupo"><summary class="mn-item" aria-current="page">Datasets</summary><div class="mn-lista"><a href="../00_dataset_cvat/README.html">00_dataset_cvat (dados brutos do CVAT)</a><a href="README.html" aria-current="page">Visão geral dos datasets derivados</a><a href="01_imagens_macrofagos_infectados/README.html">01_imagens_macrofagos_infectados</a><a href="02_recortes_512/README.html">02_recortes_512</a><a href="03_recortes_512_sem_macrofago/README.html">03_recortes_512_sem_macrofago</a><a href="04_recortes_512_sem_macrofago_reinhard/README.html">04_recortes_512_sem_macrofago_reinhard</a><a href="05_recortes_512_macrofago_cor_fundo/README.html">05_recortes_512_macrofago_cor_fundo</a><a href="../03_experimentos%20anteriores/datasets_derivados/README.html">Variantes antigas (exp06, exp07)</a></div></details><details class="mn-grupo"><summary class="mn-item">Experimentos anteriores</summary><div class="mn-lista"><a href="../03_experimentos%20anteriores/README.html">Índice exp01–exp09</a><a href="../03_experimentos%20anteriores/exp01_yolo11n/README.html">exp01 · YOLO11n, recorte original</a><a href="../03_experimentos%20anteriores/exp02_yolo11n_p2/README.html">exp02 · YOLO11n + cabeça P2, imgsz 640</a><a href="../03_experimentos%20anteriores/exp03_yolo11l/README.html">exp03 · YOLO11l, recorte original</a><a href="../03_experimentos%20anteriores/exp04_yolo26m/README.html">exp04 · YOLO26m</a><a href="../03_experimentos%20anteriores/exp05_yolo26l/README.html">exp05 · YOLO26l</a><a href="../03_experimentos%20anteriores/exp06_yolo11m_realce/README.html">exp06 · YOLO11m + realce CLAHE + aumento de dados</a><a href="../03_experimentos%20anteriores/exp07_yolo11l_lab/README.html">exp07 · YOLO11l + Lab puro + batch 4</a><a href="../03_experimentos%20anteriores/exp08_yolo11n_sem_macrofago/README.html">exp08 · YOLO11n, recorte sem macrófago</a><a href="../03_experimentos%20anteriores/exp09_yolo11l_sem_macrofago/README.html">exp09 · YOLO11l, recorte sem macrófago</a></div></details><details class="mn-grupo"><summary class="mn-item">Novos experimentos</summary><div class="mn-lista"><a href="../05_novos_experimentos/README.html">Índice, status e plano</a><a href="../05_novos_experimentos/exp10_yolov8l_sem_macrofago/README.html">exp10 · YOLOv8l sobre os recortes sem macrófago</a><a href="../05_novos_experimentos/exp11_yolo11n_reinhard/README.html">exp11 · YOLO11n sobre os recortes com coloração normalizada (Reinhard)</a><a href="../05_novos_experimentos/exp12_yolo11n_aumento_hed/README.html">exp12 · YOLO11n com aumento de cor HED no treino</a><a href="../05_novos_experimentos/exp13_yolo11n_mascara_cor_fundo/README.html">exp13 · YOLO11n sobre os recortes com o macrófago preenchido pela cor do fundo</a><a href="../05_novos_experimentos/exp14_yolo11n_imgsz1024/README.html">exp14 · YOLO11n com imgsz 1024</a></div></details></div></nav>
-<script>document.addEventListener("click",function(e){document.querySelectorAll(".mn-grupo[open]").forEach(function(d){if(!d.contains(e.target))d.removeAttribute("open")})});document.querySelectorAll(".mn-grupo").forEach(function(d){d.addEventListener("toggle",function(){if(d.open)document.querySelectorAll(".mn-grupo[open]").forEach(function(o){if(o!==d)o.removeAttribute("open")})})});</script>
-<!--/menu-->
+<!--menu--><script src="../menu.js"></script><!--/menu-->
 <main>
 <div class="crumb"><a href="../resumo_experimentos.html">Resumo dos experimentos</a> / 02_datasets_derivados</div>
 <article>

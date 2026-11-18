@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experimento 16</title>
+<style>
+:root{color-scheme:light;--bg:#f6f6f4;--surface:#fcfcfb;--border:#e3e2dd;--grid:#ecebe7;--text:#0b0b0b;--text2:#52514e;--muted:#7a7974;--accent:#2a78d6;--accent-soft:#e8f1fc}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:32px 16px 64px}
+article{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+h1{font-size:1.6rem;margin:0 0 12px;letter-spacing:-.01em}
+h2{font-size:1.15rem;margin:28px 0 8px;padding-top:16px;border-top:1px solid var(--border)}
+h3{font-size:1rem;margin:20px 0 6px}
+p,li{color:var(--text)}
+a{color:var(--accent)}
+.crumb{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums;margin:10px 0}
+.tw{overflow-x:auto}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-weight:600;color:var(--text2);font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
+code{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:.84em;background:var(--grid);padding:1px 5px;border-radius:4px}
+pre{background:var(--grid);padding:14px;border-radius:8px;overflow-x:auto;font-size:.8rem;line-height:1.5}
+pre code{background:none;padding:0}
+strong{font-weight:650}
+td code{overflow-wrap:anywhere;word-break:break-word}
+td{min-width:90px}
+figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radius:8px;border:1px solid var(--border)}figcaption{font-size:.85rem;color:var(--text2);margin-top:6px}
+</style>
+</head>
+<body>
+<!--menu--><script src="../../menu.js"></script><!--/menu-->
+<main>
+<div class="crumb"><a href="../../resumo_experimentos.html">Resumo dos experimentos</a> / <a href="../README.html">05_novos_experimentos</a> / exp16_yolo11n_params_optuna</div>
+<article>
+<h1>exp16 — YOLO11n com os hiperparâmetros encontrados pelo Optuna</h1>
+<p><strong>Objetivo:</strong> repetir o exp08 (YOLO11n sobre os recortes com o macrófago mascarado, batch 16; mAP50 0,485 ± 0,109) usando, em cada fold, os 7 hiperparâmetros que o Optuna escolheu para esse fold no <a href="../exp15_yolo11l_optuna/README.html">exp15</a> (YOLO11l; mAP50 0,510 ± 0,115). <strong>Não há nova busca.</strong></p>
+<p><strong>Pergunta:</strong> os hiperparâmetros encontrados com o YOLO11l também servem para o YOLO11n, que treina ~5× mais rápido? Se sim, a busca, que é cara, pode ser feita uma vez e reaproveitada nos outros modelos.</p>
+
+<h2>Por que os parâmetros de cada fold, e não um valor único</h2>
+<p>No exp15, os parâmetros do fold <em>k</em> foram escolhidos olhando só a lâmina de validação desse fold. Um valor único (por exemplo, a mediana dos 6 folds) misturaria as escolhas de todos os folds. Como a lâmina de validação de um fold é lâmina de teste de outro (a leish_4 valida o fold 1 e é teste no fold 4), isso deixaria informação do teste vazar para o treino. Usando os parâmetros do próprio fold, as lâminas de teste continuam sem participar de nenhuma escolha.</p>
+
+<h2>Configuração</h2>
+<div class="tw"><table>
+<thead><tr><th>Fold</th><th>lr0</th><th>weight_decay</th><th>hsv_s</th><th>hsv_v</th><th>degrees</th><th>scale</th><th>mixup</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>1,0e-4</td><td>1,3e-4</td><td>0,20</td><td>0,22</td><td>0,7</td><td>0,59</td><td>0,29</td></tr>
+<tr><td>2</td><td>1,2e-4</td><td>1,0e-4</td><td>0,41</td><td>0,69</td><td>29,0</td><td>0,25</td><td>0,00</td></tr>
+<tr><td>3</td><td>1,6e-4</td><td>1,7e-5</td><td>0,64</td><td>0,63</td><td>19,5</td><td>0,60</td><td>0,14</td></tr>
+<tr><td>4</td><td>2,7e-4</td><td>1,5e-4</td><td>0,21</td><td>0,38</td><td>29,2</td><td>0,37</td><td>0,27</td></tr>
+<tr><td>5</td><td>1,1e-4</td><td>1,7e-5</td><td>0,24</td><td>0,53</td><td>29,6</td><td>0,35</td><td>0,30</td></tr>
+<tr><td>6</td><td>1,2e-4</td><td>1,1e-5</td><td>0,23</td><td>0,45</td><td>29,9</td><td>0,20</td><td>0,02</td></tr>
+<tr><td><em>exp08</em></td><td><em>5,0e-4</em></td><td><em>5,0e-4</em></td><td><em>0,90</em></td><td><em>0,60</em></td><td><em>15</em></td><td><em>0,50</em></td><td><em>0,10</em></td></tr>
+</tbody></table></div>
+<p>O resto é igual ao exp08: YOLO11n, dataset <code>03_recortes_512_sem_macrofago</code>, imgsz 512, batch 16, AdamW, lrf 0,01, cos_lr, 150 épocas, patience 40, hsv_h 0,03, flipud 0,5, mosaico, seed 42.</p>
+<p><strong>Limitação:</strong> os parâmetros foram escolhidos para o YOLO11l com batch 8. O ótimo do YOLO11n pode ser outro (modelos menores costumam aceitar lr maior). O batch muda pouco, porque a Ultralytics acumula gradientes até um batch nominal de 64 nos dois casos.</p>
+
+<div class="tw"><table><tbody>
+<tr><td><strong>Notebook</strong></td><td><code>exp16_yolo11n_params_optuna.ipynb</code></td></tr>
+<tr><td><strong>Parâmetros</strong></td><td>lidos de <code>../exp15_yolo11l_optuna/optuna/melhores_parametros.json</code></td></tr>
+<tr><td><strong>Bases</strong></td><td>exp08 (mesmo modelo, hiperparâmetros à mão) e exp15 (mesmos hiperparâmetros, YOLO11l)</td></tr>
+<tr><td><strong>Status</strong></td><td>concluído em 18 nov. 2026 (14h30–14h50, 20 minutos; o exp15 levou 2,5 h)</td></tr>
+</tbody></table></div>
+
+<h2>Exemplos das imagens de entrada</h2>
+<figure><a href="figuras/entrada_sem_macrofago.jpg" target="_blank"><img src="figuras/entrada_sem_macrofago.jpg" alt="Recortes originais e mascarados"></a>
+<figcaption>Mesma entrada dos exp08, 09 e 15. <strong>Em cima:</strong> recorte original com todas as anotações. <strong>Embaixo:</strong> o que a rede recebe, com o macrófago pintado de preto. <span class="legenda-cores"><i style="border-color:#ffd400"></i>leishmania fora do macrófago (alvo)<i style="border-color:#ff8c00"></i>leishmania dentro do macrófago<i style="border-color:#ff0000"></i>macrófago</span></figcaption></figure>
+
+<h2>Resultado</h2>
+<div class="tw"><table>
+<thead><tr><th></th><th>Modelo</th><th>Hiperparâmetros</th><th>Precisão</th><th>Recall</th><th>mAP50</th><th>mAP50-95</th><th>Tempo</th></tr></thead>
+<tbody>
+<tr><td><strong>exp16</strong></td><td>YOLO11n</td><td>do Optuna (exp15)</td><td>0,525 ± 0,110</td><td>0,566 ± 0,055</td><td><strong>0,509 ± 0,109</strong></td><td>0,196 ± 0,039</td><td>20 min</td></tr>
+<tr><td>exp08</td><td>YOLO11n</td><td>à mão</td><td>0,508 ± 0,102</td><td>0,547 ± 0,074</td><td>0,485 ± 0,109</td><td>0,184 ± 0,039</td><td>~20 min</td></tr>
+<tr><td>exp15</td><td>YOLO11l</td><td>do Optuna</td><td>0,520 ± 0,116</td><td>0,569 ± 0,064</td><td>0,510 ± 0,115</td><td>0,199 ± 0,040</td><td>2,5 h</td></tr>
+</tbody></table></div>
+<p><strong>Conclusões:</strong></p>
+<ul>
+<li><strong>Sim, os hiperparâmetros encontrados com o YOLO11l servem para o YOLO11n.</strong> O nano chegou a 0,509, praticamente igual ao exp15 (0,510), em 20 minutos em vez de 2,5 horas.</li>
+<li>Contra o exp08 (mesmo modelo, hiperparâmetros à mão), as quatro métricas subiram: +0,024 de mAP50, +0,012 de mAP50-95, +0,017 de precisão e +0,019 de recall. O ganho no mAP50 continua abaixo do limiar de ruído (0,03), mas é o maior obtido sobre o exp08 nesta série (exp11–14 ficaram entre +0,002 e +0,011).</li>
+<li>Melhorou 4 dos 6 folds (folds 1, 2, 3 e 6). Os folds 4 e 5 ficaram praticamente iguais (−0,004 e −0,016).</li>
+<li>Os dois experimentos com os parâmetros do Optuna (exp15 e exp16) ficaram no topo, com modelos de tamanhos muito diferentes. Isso reforça que <strong>o ganho vem dos hiperparâmetros, não do modelo</strong>.</li>
+<li><strong>Nova melhor configuração custo-benefício:</strong> YOLO11n com os hiperparâmetros do exp15.</li>
+</ul>
+
+<h3>Por fold (mAP50 no teste)</h3>
+<div class="tw"><table>
+<thead><tr><th>Fold</th><th>Lâminas de teste</th><th>Épocas (melhor)</th><th>exp16</th><th>exp08</th><th>Δ exp08</th><th>exp15</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>leish_3, leish_5</td><td>62 (22)</td><td>0,569</td><td>0,534</td><td>+0,035</td><td>0,595</td></tr>
+<tr><td>2</td><td>leish_2, leish_7</td><td>124 (114)</td><td>0,641</td><td>0,574</td><td>+0,066</td><td>0,612</td></tr>
+<tr><td>3</td><td>leish_1, leish_8</td><td>116 (47)</td><td>0,372</td><td>0,354</td><td>+0,019</td><td>0,375</td></tr>
+<tr><td>4</td><td>leish_4, leish_9</td><td>80 (70)</td><td>0,472</td><td>0,476</td><td>−0,004</td><td>0,510</td></tr>
+<tr><td>5</td><td>leish_1, leish_7</td><td>55 (15)</td><td>0,596</td><td>0,612</td><td>−0,016</td><td>0,606</td></tr>
+<tr><td>6</td><td>leish_2, leish_8</td><td>95 (55)</td><td>0,403</td><td>0,360</td><td>+0,043</td><td>0,364</td></tr>
+</tbody></table></div>
+<p style="font-size:.85rem;color:var(--text2)">"Épocas (melhor)": épocas até o early stopping e, entre parênteses, a época do <code>best.pt</code>. Como no exp15, o fold 5 atinge o pico cedo (época 15).</p>
+
+<h3>Por lâmina (mAP50 no teste)</h3>
+<div class="tw"><table>
+<thead><tr><th>Lâmina</th><th>exp16</th><th>exp08</th><th>Δ</th><th>exp15</th></tr></thead>
+<tbody>
+<tr><td>leish_1</td><td>0,545</td><td>0,525</td><td>+0,020</td><td>0,518</td></tr>
+<tr><td>leish_2</td><td>0,392</td><td>0,399</td><td>−0,007</td><td>0,343</td></tr>
+<tr><td>leish_3</td><td>0,392</td><td>0,359</td><td>+0,033</td><td>0,272</td></tr>
+<tr><td>leish_4</td><td>0,187</td><td>0,184</td><td>+0,003</td><td>0,222</td></tr>
+<tr><td>leish_5</td><td>0,572</td><td>0,536</td><td>+0,036</td><td>0,600</td></tr>
+<tr><td>leish_7</td><td>0,688</td><td>0,672</td><td>+0,016</td><td>0,698</td></tr>
+<tr><td>leish_8</td><td>0,390</td><td>0,359</td><td>+0,031</td><td>0,373</td></tr>
+<tr><td>leish_9</td><td>0,535</td><td>0,590</td><td>−0,055</td><td>0,589</td></tr>
+</tbody></table></div>
+<p>Melhorou 6 das 8 lâminas. A leish_8 (0,390) e a leish_3 (0,392) tiveram os maiores valores de toda a série. A leish_4 continua a pior (0,187) e não acompanhou o ganho que teve no exp15 (0,222). A leish_9 caiu 0,055, toda no fold 4.</p>
+
+<h3>Próximo passo sugerido</h3>
+<ul>
+<li>Usar esta configuração (YOLO11n + parâmetros do exp15) como <strong>nova base</strong> dos próximos experimentos, porque é rápida (20 min) e está no topo.</li>
+<li>Aplicar os mesmos parâmetros a outros modelos (YOLO11s/m, YOLO26n, YOLOv8n) sem nova busca, cerca de 20 a 40 min cada.</li>
+<li>Repetir com 2 ou 3 seeds para saber se o +0,024 sobre o exp08 é real.</li>
+</ul>
+</article>
+</main>
+</body>
+</html>

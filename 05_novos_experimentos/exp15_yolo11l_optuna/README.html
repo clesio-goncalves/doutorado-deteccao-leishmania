@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experimento 15</title>
+<style>
+:root{color-scheme:light;--bg:#f6f6f4;--surface:#fcfcfb;--border:#e3e2dd;--grid:#ecebe7;--text:#0b0b0b;--text2:#52514e;--muted:#7a7974;--accent:#2a78d6;--accent-soft:#e8f1fc}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:32px 16px 64px}
+article{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+h1{font-size:1.6rem;margin:0 0 12px;letter-spacing:-.01em}
+h2{font-size:1.15rem;margin:28px 0 8px;padding-top:16px;border-top:1px solid var(--border)}
+h3{font-size:1rem;margin:20px 0 6px}
+p,li{color:var(--text)}
+a{color:var(--accent)}
+.crumb{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums;margin:10px 0}
+.tw{overflow-x:auto}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-weight:600;color:var(--text2);font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
+code{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:.84em;background:var(--grid);padding:1px 5px;border-radius:4px}
+pre{background:var(--grid);padding:14px;border-radius:8px;overflow-x:auto;font-size:.8rem;line-height:1.5}
+pre code{background:none;padding:0}
+strong{font-weight:650}
+td code{overflow-wrap:anywhere;word-break:break-word}
+td{min-width:90px}
+figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radius:8px;border:1px solid var(--border)}figcaption{font-size:.85rem;color:var(--text2);margin-top:6px}
+</style>
+</head>
+<body>
+<!--menu--><script src="../../menu.js"></script><!--/menu-->
+<main>
+<div class="crumb"><a href="../../resumo_experimentos.html">Resumo dos experimentos</a> / <a href="../README.html">05_novos_experimentos</a> / exp15_yolo11l_optuna</div>
+<article>
+<h1>exp15 — YOLO11l com hiperparâmetros otimizados pelo Optuna</h1>
+<p><strong>Objetivo:</strong> repetir o exp09 (YOLO11l sobre os recortes com o macrófago mascarado, batch 8; mAP50 0,493 ± 0,152), trocando os hiperparâmetros escolhidos à mão pelos encontrados pelo <strong>Optuna</strong>. O modelo fica fixo no YOLO11l; outros modelos de YOLO serão testados depois.</p>
+<p><strong>Hipótese:</strong> os hiperparâmetros do exp09 vieram do exp06 e nunca foram ajustados para o dataset mascarado. Uma busca automática pode encontrar uma combinação melhor.</p>
+
+<h2>O que é o Optuna</h2>
+<p>O Optuna é um framework de <strong>otimização automática de hiperparâmetros</strong>. Em vez de testar combinações à mão, ele faz isto:</p>
+<ol>
+<li>propõe uma combinação de hiperparâmetros (uma <strong>tentativa</strong>);</li>
+<li>treina o modelo com ela e mede o resultado (aqui, o mAP50 na lâmina de validação);</li>
+<li>usa o histórico de todas as tentativas para escolher a próxima, e repete.</li>
+</ol>
+<ul>
+<li><strong>Amostrador TPE</strong> (<em>Tree-structured Parzen Estimator</em>): separa as tentativas em boas e ruins e sorteia as próximas onde as boas se concentram. As 3 primeiras tentativas de cada fold exploram o espaço; depois a busca se concentra nas regiões promissoras.</li>
+<li><strong>Poda (MedianPruner)</strong>: a cada época, uma tentativa com mAP50 abaixo da mediana das anteriores na mesma época é interrompida, para não gastar tempo com combinações ruins. As 3 primeiras tentativas e as 5 primeiras épocas de cada uma nunca são interrompidas.</li>
+<li><strong>Estudo</strong>: o conjunto de tentativas de uma busca. Fica salvo num banco SQLite (<code>optuna/estudos.db</code>); se a execução parar, a busca continua de onde estava.</li>
+</ul>
+
+<h2>Protocolo: otimização aninhada, sem vazamento</h2>
+<p>Se a busca olhasse para as lâminas de teste, o resultado ficaria otimista. Por isso, ela é feita <strong>dentro de cada fold</strong>:</p>
+<ol>
+<li>Cada um dos 6 folds tem um estudo próprio, com <strong>8 tentativas</strong>.</li>
+<li>Cada tentativa treina nas 5 lâminas de treino do fold por <strong>15 épocas</strong> e é medida <strong>só na lâmina de validação</strong> do fold.</li>
+<li>As 2 lâminas de teste ficam fora da busca.</li>
+<li>O fold é treinado de novo com os seus melhores hiperparâmetros, no regime completo do exp09 (150 épocas, patience 40), e avaliado no teste.</li>
+</ol>
+<p>A <strong>1ª tentativa de cada estudo é a configuração do exp09</strong>. Assim, o Optuna só troca a configuração se achar algo melhor na validação.</p>
+<p><strong>Por que uma busca pequena:</strong> o YOLO11l leva ~8 s por época. Uma busca com 30 tentativas de 30 épocas levaria mais de 10 horas. Com 8 tentativas de 15 épocas e 7 hiperparâmetros, a previsão é de ~1,3 h de busca e ~1,5 h de treino final.</p>
+<p><strong>Limitações:</strong></p>
+<ul>
+<li>Com só 8 tentativas, a busca explora pouco o espaço.</li>
+<li>Tentativas curtas (15 épocas, contra até 150 no treino final) favorecem configurações que aprendem rápido.</li>
+<li>Cada fold tem uma única lâmina de validação, então a escolha pode se ajustar às particularidades dela.</li>
+</ul>
+
+<h2>Espaço de busca</h2>
+<div class="tw"><table>
+<thead><tr><th>Parâmetro</th><th>Faixa</th><th>exp09</th><th>O que controla</th></tr></thead>
+<tbody>
+<tr><td><code>lr0</code></td><td>1e-4 a 2e-3 (log)</td><td>5e-4</td><td>Taxa de aprendizado inicial</td></tr>
+<tr><td><code>weight_decay</code></td><td>1e-5 a 1e-3 (log)</td><td>5e-4</td><td>Regularização dos pesos</td></tr>
+<tr><td><code>hsv_s</code></td><td>0,2 a 0,9</td><td>0,9</td><td>Jitter de saturação (a cor varia muito entre lâminas)</td></tr>
+<tr><td><code>hsv_v</code></td><td>0,2 a 0,7</td><td>0,6</td><td>Jitter de brilho</td></tr>
+<tr><td><code>degrees</code></td><td>0 a 30</td><td>15</td><td>Rotação aleatória (graus)</td></tr>
+<tr><td><code>scale</code></td><td>0,2 a 0,6</td><td>0,5</td><td>Variação de escala (as leishmanias têm ~20 px)</td></tr>
+<tr><td><code>mixup</code></td><td>0 a 0,3</td><td>0,1</td><td>Probabilidade de mixup (mistura de duas imagens)</td></tr>
+</tbody></table></div>
+<p>Ficaram fixos, iguais ao exp09: modelo YOLO11l, dataset <code>03_recortes_512_sem_macrofago</code>, imgsz 512, batch 8, AdamW, lrf 0,01, cos_lr, hsv_h 0,03, flipud 0,5, mosaico, seed 42.</p>
+
+<div class="tw"><table><tbody>
+<tr><td><strong>Notebook</strong></td><td><code>exp15_yolo11l_optuna.ipynb</code></td></tr>
+<tr><td><strong>Modelo</strong></td><td><code>yolo11l.pt</code> (pré-treinado COCO, 25M parâmetros)</td></tr>
+<tr><td><strong>Saídas da busca</strong></td><td><code>optuna/estudos.db</code> (todas as tentativas), <code>optuna/melhores_parametros.json</code> (escolha de cada fold)</td></tr>
+<tr><td><strong>Status</strong></td><td>concluído em 18 nov. 2026 (11h45–14h16, 2,5 h no total: busca + treino final dos 6 folds)</td></tr>
+</tbody></table></div>
+
+<h2>Exemplos das imagens de entrada</h2>
+<figure><a href="figuras/entrada_sem_macrofago.jpg" target="_blank"><img src="figuras/entrada_sem_macrofago.jpg" alt="Recortes originais e mascarados"></a>
+<figcaption>Mesma entrada dos exp08 e exp09. <strong>Em cima:</strong> recorte original com todas as anotações. <strong>Embaixo:</strong> o que a rede recebe, com o macrófago pintado de preto. <span class="legenda-cores"><i style="border-color:#ffd400"></i>leishmania fora do macrófago (alvo)<i style="border-color:#ff8c00"></i>leishmania dentro do macrófago<i style="border-color:#ff0000"></i>macrófago</span></figcaption></figure>
+
+<h2>Resultado</h2>
+<div class="tw"><table>
+<thead><tr><th></th><th>Precisão</th><th>Recall</th><th>mAP50</th><th>mAP50-95</th></tr></thead>
+<tbody>
+<tr><td><strong>exp15 (Optuna)</strong></td><td>0,520 ± 0,116</td><td>0,569 ± 0,064</td><td><strong>0,510 ± 0,115</strong></td><td>0,199 ± 0,040</td></tr>
+<tr><td>exp09 (mão)</td><td>0,510 ± 0,136</td><td>0,551 ± 0,100</td><td>0,493 ± 0,152</td><td>0,192 ± 0,059</td></tr>
+<tr><td>Δ</td><td>+0,010</td><td>+0,018</td><td>+0,017</td><td>+0,007</td></tr>
+</tbody></table></div>
+<p><strong>Conclusões:</strong></p>
+<ul>
+<li><strong>Maior mAP50 médio da série</strong> (0,510), à frente do exp12 (0,496). Ainda assim, o ganho sobre o exp09 (+0,017) está <strong>dentro do ruído</strong> entre folds (|Δ| &lt; 0,03).</li>
+<li>As quatro métricas subiram juntas, e o <strong>desvio caiu</strong> de 0,152 para 0,115 (os folds ficaram mais parecidos).</li>
+<li>O Optuna melhorou <strong>4 dos 6 folds</strong> no teste. Os maiores ganhos foram nos folds 4 e 6 (+0,065 e +0,064). Piorou nos folds 2 e 5.</li>
+<li>No fold 5, a busca achou na validação (leish_2) uma configuração melhor que a do exp09 (+0,031), mas ela foi pior no teste (−0,055). É o risco de escolher com uma única lâmina de validação.</li>
+<li>O mAP50-95 (0,199) empata com o do exp14, que é o melhor da série.</li>
+</ul>
+
+<h3>O que o Optuna escolheu</h3>
+<p>Em todos os folds, a 1ª tentativa (configuração do exp09) foi superada na validação. A escolha final de cada fold:</p>
+<div class="tw"><table>
+<thead><tr><th>Fold</th><th>lr0</th><th>weight_decay</th><th>hsv_s</th><th>hsv_v</th><th>degrees</th><th>scale</th><th>mixup</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>1,0e-4</td><td>1,3e-4</td><td>0,20</td><td>0,22</td><td>0,7</td><td>0,59</td><td>0,29</td></tr>
+<tr><td>2</td><td>1,2e-4</td><td>1,0e-4</td><td>0,41</td><td>0,69</td><td>29,0</td><td>0,25</td><td>0,00</td></tr>
+<tr><td>3</td><td>1,6e-4</td><td>1,7e-5</td><td>0,64</td><td>0,63</td><td>19,5</td><td>0,60</td><td>0,14</td></tr>
+<tr><td>4</td><td>2,7e-4</td><td>1,5e-4</td><td>0,21</td><td>0,38</td><td>29,2</td><td>0,37</td><td>0,27</td></tr>
+<tr><td>5</td><td>1,1e-4</td><td>1,7e-5</td><td>0,24</td><td>0,53</td><td>29,6</td><td>0,35</td><td>0,30</td></tr>
+<tr><td>6</td><td>1,2e-4</td><td>1,1e-5</td><td>0,23</td><td>0,45</td><td>29,9</td><td>0,20</td><td>0,02</td></tr>
+<tr><td><em>exp09</em></td><td><em>5,0e-4</em></td><td><em>5,0e-4</em></td><td><em>0,90</em></td><td><em>0,60</em></td><td><em>15</em></td><td><em>0,50</em></td><td><em>0,10</em></td></tr>
+</tbody></table></div>
+<p><strong>Padrões que se repetem entre os folds</strong> (são a parte mais útil do experimento):</p>
+<ul>
+<li><strong>lr0 menor:</strong> todos os folds escolheram de 1e-4 a 2,7e-4 (o exp09 usa 5e-4). Cinco deles ficaram colados no <strong>limite inferior</strong> da faixa (1e-4), então o ótimo pode estar abaixo dela.</li>
+<li><strong>weight_decay menor:</strong> de 1e-5 a 1,5e-4, contra 5e-4.</li>
+<li><strong>Menos jitter de saturação:</strong> <code>hsv_s</code> de 0,2 a 0,4 em 5 folds, contra 0,9. É também o hiperparâmetro de maior importância (figura abaixo).</li>
+<li><strong>Mais rotação:</strong> 4 folds escolheram ~30°, o <strong>limite superior</strong> da faixa (o exp09 usa 15°).</li>
+<li><code>scale</code>, <code>mixup</code> e <code>hsv_v</code> variaram sem padrão claro.</li>
+</ul>
+<figure><a href="figuras/importancia_hiperparametros.png" target="_blank"><img src="figuras/importancia_hiperparametros.png" alt="Importância dos hiperparâmetros" style="max-width:640px"></a>
+<figcaption>Importância de cada hiperparâmetro para o mAP50 na validação (fANOVA do Optuna, média dos 6 folds). Com só 8 tentativas por fold, a estimativa é grosseira: só o <code>hsv_s</code> se destaca; os demais ficam próximos.</figcaption></figure>
+
+<h3>Busca por fold</h3>
+<div class="tw"><table>
+<thead><tr><th>Fold</th><th>Validação</th><th>Podadas</th><th>mAP50 val. exp09</th><th>mAP50 val. melhor</th><th>Épocas (melhor)</th><th>mAP50 teste exp15</th><th>exp09</th><th>Δ</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>leish_4</td><td>2 de 8</td><td>0,202</td><td>0,295</td><td>92 (52)</td><td>0,595</td><td>0,580</td><td>+0,015</td></tr>
+<tr><td>2</td><td>leish_8</td><td>1 de 8</td><td>0,346</td><td>0,389</td><td>88 (55)</td><td>0,612</td><td>0,627</td><td>−0,015</td></tr>
+<tr><td>3</td><td>leish_9</td><td>3 de 8</td><td>0,609</td><td>0,635</td><td>59 (32)</td><td>0,375</td><td>0,346</td><td>+0,029</td></tr>
+<tr><td>4</td><td>leish_7</td><td>2 de 8</td><td>0,676</td><td>0,697</td><td>111 (73)</td><td>0,510</td><td>0,445</td><td>+0,065</td></tr>
+<tr><td>5</td><td>leish_2</td><td>3 de 8</td><td>0,421</td><td>0,453</td><td>61 (7)</td><td>0,606</td><td>0,661</td><td>−0,055</td></tr>
+<tr><td>6</td><td>leish_1</td><td>3 de 8</td><td>0,524</td><td>0,617</td><td>85 (29)</td><td>0,364</td><td>0,300</td><td>+0,064</td></tr>
+</tbody></table></div>
+<p style="font-size:.85rem;color:var(--text2)">"mAP50 val." é da busca (15 épocas). "Épocas (melhor)": épocas do treino final até o early stopping e, entre parênteses, a época do <code>best.pt</code>. No fold 5, a melhor época foi a 7: o modelo atingiu o pico cedo e não melhorou mais. A poda interrompeu 14 das 48 tentativas.</p>
+
+<h3>Por lâmina (mAP50 no teste)</h3>
+<div class="tw"><table>
+<thead><tr><th>Lâmina</th><th>exp15</th><th>exp09</th><th>Δ</th></tr></thead>
+<tbody>
+<tr><td>leish_1</td><td>0,518</td><td>0,553</td><td>−0,035</td></tr>
+<tr><td>leish_2</td><td>0,343</td><td>0,346</td><td>−0,003</td></tr>
+<tr><td>leish_3</td><td>0,272</td><td>0,352</td><td>−0,080</td></tr>
+<tr><td>leish_4</td><td>0,222</td><td>0,198</td><td>+0,024</td></tr>
+<tr><td>leish_5</td><td>0,600</td><td>0,583</td><td>+0,017</td></tr>
+<tr><td>leish_7</td><td>0,698</td><td>0,711</td><td>−0,013</td></tr>
+<tr><td>leish_8</td><td>0,373</td><td>0,324</td><td>+0,049</td></tr>
+<tr><td>leish_9</td><td>0,589</td><td>0,547</td><td>+0,042</td></tr>
+</tbody></table></div>
+<p>A leish_5 (0,600) teve o maior valor de toda a série. A leish_8 (0,373), a leish_9 (0,589) e a leish_4 (0,222) ficaram perto dos melhores da série (0,380 no exp10, 0,590 no exp08 e 0,226 no exp11). A queda na leish_3 tem pouco peso, porque ela tem só 10 instâncias.</p>
+
+<h3>Próximo passo sugerido</h3>
+<ul>
+<li>Usar os padrões encontrados como <strong>nova configuração fixa</strong> (por exemplo, lr0 1e-4, weight_decay 1e-4, hsv_s 0,25, degrees 30), sem busca, e testá-la com outros modelos, inclusive o YOLO11n, que é ~5× mais rápido.</li>
+<li>Se repetir a busca, deslocar as faixas: lr0 de 2e-5 a 5e-4 e degrees de 0 a 45.</li>
+</ul>
+
+<h2>Histórico</h2>
+<ul>
+<li>18 nov. 2026: a 1ª versão buscava só hiperparâmetros com o YOLO11n (interrompida após 2 minutos). A 2ª versão deixava o Optuna escolher também o modelo entre 9 opções, com 30 tentativas de 30 épocas por fold (previsão de 5 a 7 horas); foi cancelada para rodar em menos tempo.</li>
+<li>18 nov. 2026: versão atual, com o modelo fixo no YOLO11l (o modelo do exp09, maior mAP50 entre os experimentos que só trocaram o modelo) e busca reduzida. Os outros modelos de YOLO serão testados num experimento seguinte.</li>
+</ul>
+</article>
+</main>
+</body>
+</html>

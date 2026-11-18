@@ -11,14 +11,15 @@ Rafael: detecta e recorta os macrófagos → Vivi: filtra os falsos positivos �
 
 ## Principais resultados
 
-Os resultados são de 14 experimentos, com validação cruzada de 6 folds separados por lâmina. As métricas são do conjunto de teste, em média ± desvio padrão entre os folds.
+Os resultados são de 16 experimentos, com validação cruzada de 6 folds separados por lâmina. As métricas são do conjunto de teste, em média ± desvio padrão entre os folds.
 
-1. **Mascarar a região do macrófago foi a única mudança que ajudou de forma clara.** O mAP50 subiu de 0,39–0,44 (exp01–07) para 0,485–0,496 (exp08–14). A máscara tira a confusão entre a amastigota de dentro e a de fora do macrófago.
+1. **Mascarar a região do macrófago foi a única mudança que ajudou de forma clara.** O mAP50 subiu de 0,39–0,44 (exp01–07) para 0,485–0,510 (exp08–16). A máscara tira a confusão entre a amastigota de dentro e a de fora do macrófago.
 2. **O tamanho e a arquitetura do modelo não importaram.** Do YOLO11n (2,6M de parâmetros) ao YOLOv8l (43,6M), passando por YOLO26 e cabeça P2, todos ficaram no mesmo patamar. O **YOLO11n** treina cerca de 5× mais rápido e é o melhor custo-benefício.
 3. **O pré-processamento sobre o recorte mascarado não mudou a média (exp11–14).** Testamos normalização de cor (Reinhard), aumento de cor HED, máscara com a cor do fundo e imgsz 1024. Todos ficaram dentro do ruído, entre +0,002 e +0,011 em relação ao exp08.
-4. **O limitante principal são os dados.** A variação entre folds (~0,10–0,15) é maior que qualquer ganho obtido. A `leish_4` e a `leish_3` são sempre as piores lâminas, e a `leish_7` sempre a melhor.
+4. **Otimizar os hiperparâmetros com o Optuna (exp15) deu a maior média, mas ainda dentro do ruído.** Com o YOLO11l e busca aninhada em cada fold, o mAP50 foi 0,510 ± 0,115, +0,017 sobre o exp09, com 4 de 6 folds melhores e desvio menor. A busca apontou padrões consistentes: lr0 menor (~1e-4), weight_decay menor, menos jitter de saturação e rotação de ~30°. **Aplicados ao YOLO11n sem nova busca (exp16), esses parâmetros deram 0,509 em 20 minutos**, o mesmo patamar do exp15 (2,5 h) e +0,024 sobre o exp08.
+5. **O limitante principal são os dados.** A variação entre folds (~0,10–0,15) é maior que qualquer ganho obtido. A `leish_4` e a `leish_3` são sempre as piores lâminas, e a `leish_7` sempre a melhor.
 
-**Melhor configuração até aqui:** recorte 512×512 com o macrófago mascarado + YOLO11n, imgsz 512, AdamW, lr0 5e-4, cos_lr, 150 épocas, patience 40 e aumento de dados (hsv 0.03/0.9/0.6, degrees 15, flipud 0.5, mixup 0.1).
+**Melhor configuração até aqui (exp16):** recorte 512×512 com o macrófago mascarado + YOLO11n, imgsz 512, AdamW, cos_lr, 150 épocas, patience 40, flipud 0.5, com os hiperparâmetros escolhidos pelo Optuna no exp15 para cada fold (lr0 ~1e-4, weight_decay ~1e-5 a 1,5e-4, hsv_s ~0,2–0,4, degrees ~30 na maioria). Os valores por fold estão em `05_novos_experimentos/exp15_yolo11l_optuna/optuna/melhores_parametros.json`.
 
 | Exp. | Configuração | Entrada | Precisão | Recall | mAP50 | mAP50-95 |
 |---|---|---|---|---|---|---|
@@ -33,9 +34,11 @@ Os resultados são de 14 experimentos, com validação cruzada de 6 folds separa
 | 09 | YOLO11l | mascarado | 0,510 ± 0,136 | 0,551 ± 0,100 | 0,493 ± 0,152 | 0,192 ± 0,059 |
 | 10 | YOLOv8l | mascarado | 0,503 ± 0,103 | 0,549 ± 0,066 | 0,489 ± 0,107 | 0,188 ± 0,038 |
 | 11 | YOLO11n + cor normalizada (Reinhard) | mascarado | 0,498 ± 0,118 | 0,560 ± 0,072 | 0,492 ± 0,121 | 0,189 ± 0,041 |
-| 12 | YOLO11n + aumento de cor HED | mascarado | 0,514 ± 0,110 | 0,555 ± 0,075 | **0,496 ± 0,124** | 0,190 ± 0,042 |
+| 12 | YOLO11n + aumento de cor HED | mascarado | 0,514 ± 0,110 | 0,555 ± 0,075 | 0,496 ± 0,124 | 0,190 ± 0,042 |
 | 13 | YOLO11n, máscara com a cor do fundo | mascarado (cor do fundo) | 0,506 ± 0,121 | 0,550 ± 0,099 | 0,488 ± 0,130 | 0,187 ± 0,047 |
 | 14 | YOLO11n, imgsz 1024 | mascarado | 0,505 ± 0,128 | 0,554 ± 0,084 | 0,489 ± 0,134 | **0,199 ± 0,052** |
+| 15 | YOLO11l + hiperparâmetros pelo Optuna | mascarado | 0,520 ± 0,116 | 0,569 ± 0,064 | **0,510 ± 0,115** | **0,199 ± 0,040** |
+| 16 | **YOLO11n + hiperparâmetros do exp15** | mascarado | 0,525 ± 0,110 | 0,566 ± 0,055 | 0,509 ± 0,109 | 0,196 ± 0,039 |
 
 Diferenças menores que ~0,03 de mAP50 estão dentro do ruído entre folds.
 
@@ -68,7 +71,8 @@ Diferenças menores que ~0,03 de mAP50 estão dentro do ruído entre folds.
 ```
 ├── README.md                     esta página
 ├── resumo_experimentos.html      resumo completo: gráficos, mapa de calor por lâmina, conclusões
-├── atualizar_menu.py             refaz a barra de menu das páginas HTML
+├── menu.js                       barra de menu compartilhada pelas páginas HTML
+├── atualizar_menu.py             regera o menu.js após criar um experimento ou README
 ├── 00_dataset_cvat/              dados brutos do CVAT (só o README no git)
 ├── 01_preprocessamento/          notebooks 01–05 que geram os datasets
 ├── 02_datasets_derivados/        datasets gerados (só os READMEs e as figuras no git)

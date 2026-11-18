@@ -29,32 +29,10 @@ strong{font-weight:650}
 td code{overflow-wrap:anywhere;word-break:break-word}
 td{min-width:90px}
 details>summary{cursor:pointer;font-weight:600;padding:6px 0}
-/*menu*/
-.mn{position:sticky;top:0;z-index:50;margin:0;display:block;background:var(--surface,var(--surface-1));border-bottom:1px solid var(--border);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.mn-in{max-width:1100px;margin:0 auto;padding:6px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px}
-.mn a{text-decoration:none;border-bottom:0}
-.mn-marca{font-weight:650;color:var(--text,var(--text-primary));margin-right:10px;padding:6px 0;white-space:nowrap}
-.mn-item{display:inline-block;padding:6px 10px;border-radius:6px;color:var(--text2,var(--text-secondary));cursor:pointer;white-space:nowrap;list-style:none}
-.mn-item::-webkit-details-marker{display:none}
-summary.mn-item::after{content:" ▾";font-size:.8em}
-.mn-item:hover{background:var(--grid);color:var(--text,var(--text-primary))}
-.mn-item[aria-current]{background:var(--accent-soft);color:var(--text,var(--text-primary));font-weight:600}
-.mn-grupo{position:relative}
-.mn-lista{position:absolute;left:0;top:calc(100% + 4px);min-width:260px;max-width:min(440px,90vw);max-height:70vh;overflow:auto;background:var(--surface,var(--surface-1));border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;display:flex;flex-direction:column}
-.mn-lista a{padding:7px 10px;border-radius:5px;color:var(--text,var(--text-primary));font-size:.9rem}
-.mn-lista a:hover{background:var(--grid)}
-.mn-lista a[aria-current]{background:var(--accent-soft);font-weight:600}
-@media (max-width:640px){.mn-marca{width:100%}.mn-grupo{position:static}.mn-lista{left:16px;right:16px;max-width:none}}
-[id]{scroll-margin-top:60px}
-@media print{.mn{display:none}}
-/*/menu*/
 </style>
 </head>
 <body>
-<!--menu-->
-<nav class="mn" aria-label="Navegação do projeto"><div class="mn-in"><a class="mn-marca" href="../resumo_experimentos.html">Leishmania · Doutorado</a><a class="mn-item" href="../resumo_experimentos.html">Resumo</a><a class="mn-item" href="../01_preprocessamento/README.html">Pré-processamento</a><details class="mn-grupo"><summary class="mn-item">Datasets</summary><div class="mn-lista"><a href="../00_dataset_cvat/README.html">00_dataset_cvat (dados brutos do CVAT)</a><a href="../02_datasets_derivados/README.html">Visão geral dos datasets derivados</a><a href="../02_datasets_derivados/01_imagens_macrofagos_infectados/README.html">01_imagens_macrofagos_infectados</a><a href="../02_datasets_derivados/02_recortes_512/README.html">02_recortes_512</a><a href="../02_datasets_derivados/03_recortes_512_sem_macrofago/README.html">03_recortes_512_sem_macrofago</a><a href="../02_datasets_derivados/04_recortes_512_sem_macrofago_reinhard/README.html">04_recortes_512_sem_macrofago_reinhard</a><a href="../02_datasets_derivados/05_recortes_512_macrofago_cor_fundo/README.html">05_recortes_512_macrofago_cor_fundo</a><a href="../03_experimentos%20anteriores/datasets_derivados/README.html">Variantes antigas (exp06, exp07)</a></div></details><details class="mn-grupo"><summary class="mn-item">Experimentos anteriores</summary><div class="mn-lista"><a href="../03_experimentos%20anteriores/README.html">Índice exp01–exp09</a><a href="../03_experimentos%20anteriores/exp01_yolo11n/README.html">exp01 · YOLO11n, recorte original</a><a href="../03_experimentos%20anteriores/exp02_yolo11n_p2/README.html">exp02 · YOLO11n + cabeça P2, imgsz 640</a><a href="../03_experimentos%20anteriores/exp03_yolo11l/README.html">exp03 · YOLO11l, recorte original</a><a href="../03_experimentos%20anteriores/exp04_yolo26m/README.html">exp04 · YOLO26m</a><a href="../03_experimentos%20anteriores/exp05_yolo26l/README.html">exp05 · YOLO26l</a><a href="../03_experimentos%20anteriores/exp06_yolo11m_realce/README.html">exp06 · YOLO11m + realce CLAHE + aumento de dados</a><a href="../03_experimentos%20anteriores/exp07_yolo11l_lab/README.html">exp07 · YOLO11l + Lab puro + batch 4</a><a href="../03_experimentos%20anteriores/exp08_yolo11n_sem_macrofago/README.html">exp08 · YOLO11n, recorte sem macrófago</a><a href="../03_experimentos%20anteriores/exp09_yolo11l_sem_macrofago/README.html">exp09 · YOLO11l, recorte sem macrófago</a></div></details><details class="mn-grupo"><summary class="mn-item" aria-current="page">Novos experimentos</summary><div class="mn-lista"><a href="README.html" aria-current="page">Índice, status e plano</a><a href="exp10_yolov8l_sem_macrofago/README.html">exp10 · YOLOv8l sobre os recortes sem macrófago</a><a href="exp11_yolo11n_reinhard/README.html">exp11 · YOLO11n sobre os recortes com coloração normalizada (Reinhard)</a><a href="exp12_yolo11n_aumento_hed/README.html">exp12 · YOLO11n com aumento de cor HED no treino</a><a href="exp13_yolo11n_mascara_cor_fundo/README.html">exp13 · YOLO11n sobre os recortes com o macrófago preenchido pela cor do fundo</a><a href="exp14_yolo11n_imgsz1024/README.html">exp14 · YOLO11n com imgsz 1024</a></div></details></div></nav>
-<script>document.addEventListener("click",function(e){document.querySelectorAll(".mn-grupo[open]").forEach(function(d){if(!d.contains(e.target))d.removeAttribute("open")})});document.querySelectorAll(".mn-grupo").forEach(function(d){d.addEventListener("toggle",function(){if(d.open)document.querySelectorAll(".mn-grupo[open]").forEach(function(o){if(o!==d)o.removeAttribute("open")})})});</script>
-<!--/menu-->
+<!--menu--><script src="../menu.js"></script><!--/menu-->
 <main>
 <div class="crumb"><a href="../resumo_experimentos.html">Resumo dos experimentos</a> / 05_novos_experimentos</div>
 <article>
@@ -70,6 +48,8 @@ summary.mn-item::after{content:" ▾";font-size:.8em}
 <tr><td><a href="exp12_yolo11n_aumento_hed/README.html"><strong>exp12</strong></a></td><td>Aumento de cor HED</td><td>exp08</td><td>0,496 ± 0,124</td><td>+0,011</td><td>concluído</td></tr>
 <tr><td><a href="exp13_yolo11n_mascara_cor_fundo/README.html"><strong>exp13</strong></a></td><td>Máscara com cor do fundo</td><td>exp08</td><td>0,488 ± 0,130</td><td>+0,003</td><td>concluído</td></tr>
 <tr><td><a href="exp14_yolo11n_imgsz1024/README.html"><strong>exp14</strong></a></td><td>Entrada 1024</td><td>exp08</td><td>0,489 ± 0,134</td><td>+0,004</td><td>concluído</td></tr>
+<tr><td><a href="exp15_yolo11l_optuna/README.html"><strong>exp15</strong></a></td><td>YOLO11l + hiperparâmetros pelo Optuna</td><td>exp09</td><td><strong>0,510 ± 0,115</strong></td><td>+0,017</td><td>concluído</td></tr>
+<tr><td><a href="exp16_yolo11n_params_optuna/README.html"><strong>exp16</strong></a></td><td>YOLO11n + hiperparâmetros do exp15</td><td>exp08</td><td><strong>0,509 ± 0,109</strong></td><td>+0,024</td><td>concluído</td></tr>
 </tbody></table></div>
 <p style="font-size:.85rem;color:var(--text2)">Bases: exp08 = 0,485 ± 0,109 · exp09 = 0,493 ± 0,152. <strong>|Δ| &lt; 0,03 está dentro do ruído</strong> (o desvio entre folds é ~0,10).</p>
 
@@ -79,6 +59,15 @@ summary.mn-item::after{content:" ▾";font-size:.8em}
 <li><strong>Por quê:</strong> nos exp01–10, trocar o modelo não mudou o resultado; só mascarar o macrófago mudou. O YOLO11n treina ~5× mais rápido que os large.</li>
 <li><strong>Como comparar:</strong> fold a fold e por lâmina, olhando principalmente a leish_4 e a leish_8.</li>
 <li><strong>Resultado:</strong> nenhum dos quatro passou do ruído (Δ de +0,002 a +0,011). Destaques: o exp11 (Reinhard) teve o melhor valor da série na leish_4 (0,226), e o exp14 (1024) teve o melhor mAP50-95 (0,199). A máscara continua sendo o único ganho claro.</li>
+</ul>
+
+<h2>exp15–16: Optuna</h2>
+<ul>
+<li>Modelo fixo no YOLO11l (o do exp09). O Optuna escolhe, <strong>em cada fold</strong>, 7 hiperparâmetros usando só a lâmina de validação do fold (8 tentativas de 15 épocas). Depois cada fold é treinado no regime completo e avaliado no teste.</li>
+<li><strong>Resultado:</strong> maior mAP50 da série (0,510), mas +0,017 sobre o exp09 ainda está no ruído. Melhorou 4 de 6 folds e reduziu o desvio (0,152 → 0,115). Levou 2,5 h.</li>
+<li><strong>Padrões úteis:</strong> todos os folds preferiram lr0 menor (~1e-4, no limite da faixa), weight_decay menor, menos jitter de saturação (hsv_s ~0,2–0,4) e, em 4 de 6, rotação de ~30°.</li>
+<li><strong>exp16:</strong> os parâmetros do exp15 aplicados ao YOLO11n, sem nova busca, deram 0,509 em 20 minutos, praticamente igual ao exp15 (2,5 h) e +0,024 sobre o exp08. O ganho vem dos hiperparâmetros, não do modelo. Essa é a nova base sugerida.</li>
+<li>Próximo: os mesmos parâmetros em outros modelos de YOLO, sem nova busca.</li>
 </ul>
 
 <h2>Próximas ideias</h2>
@@ -106,7 +95,7 @@ summary.mn-item::after{content:" ▾";font-size:.8em}
 <pre><code>setsid nohup papermill -k python3 --cwd . expNN.ipynb expNN.ipynb &gt; execucao.log 2&gt;&amp;1 &amp;</code></pre>
 <p><strong>Vários em sequência</strong> (início e fim em <code>fila.log</code>):</p>
 <pre><code>setsid nohup ./executar_fila.sh exp11_… exp12_… &gt; fila.log 2&gt;&amp;1 &lt; /dev/null &amp; disown</code></pre>
-<p><strong>Depois de criar um experimento</strong>, na raiz do projeto:</p>
+<p><strong>Depois de criar um experimento</strong>, na raiz do projeto (regera o <code>menu.js</code>; os outros READMEs não são alterados):</p>
 <pre><code>python atualizar_menu.py</code></pre>
 <ul>
 <li>Um fold só conta como pronto se existir <code>runs/fold_N/concluido.txt</code>; folds interrompidos são refeitos.</li>

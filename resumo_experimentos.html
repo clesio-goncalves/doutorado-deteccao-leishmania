@@ -107,7 +107,7 @@ td .pm { color: var(--text-muted); font-size: .8rem; }
 code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: .84em; background: var(--grid); padding: 1px 5px; border-radius: 4px; }
 
 /* Heatmap */
-.heat { display: grid; grid-template-columns: 90px repeat(14, minmax(40px, 1fr)); gap: 2px; min-width: 720px; }
+.heat { display: grid; grid-template-columns: 90px repeat(16, minmax(40px, 1fr)); gap: 2px; min-width: 800px; }
 .heat .h { font-size: .76rem; color: var(--text-secondary); text-align: center; padding: 4px 0; }
 .heat .rl { font-size: .84rem; color: var(--text-secondary); display: flex; align-items: center; }
 .heat .c {
@@ -154,32 +154,10 @@ footer { color: var(--text-muted); font-size: .8rem; margin-top: 28px; text-alig
   header h1 { font-size: 1.35rem; }
   section.card { padding: 16px; }
 }
-/*menu*/
-.mn{position:sticky;top:0;z-index:50;margin:0;display:block;background:var(--surface,var(--surface-1));border-bottom:1px solid var(--border);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.mn-in{max-width:1100px;margin:0 auto;padding:6px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px}
-.mn a{text-decoration:none;border-bottom:0}
-.mn-marca{font-weight:650;color:var(--text,var(--text-primary));margin-right:10px;padding:6px 0;white-space:nowrap}
-.mn-item{display:inline-block;padding:6px 10px;border-radius:6px;color:var(--text2,var(--text-secondary));cursor:pointer;white-space:nowrap;list-style:none}
-.mn-item::-webkit-details-marker{display:none}
-summary.mn-item::after{content:" ▾";font-size:.8em}
-.mn-item:hover{background:var(--grid);color:var(--text,var(--text-primary))}
-.mn-item[aria-current]{background:var(--accent-soft);color:var(--text,var(--text-primary));font-weight:600}
-.mn-grupo{position:relative}
-.mn-lista{position:absolute;left:0;top:calc(100% + 4px);min-width:260px;max-width:min(440px,90vw);max-height:70vh;overflow:auto;background:var(--surface,var(--surface-1));border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;display:flex;flex-direction:column}
-.mn-lista a{padding:7px 10px;border-radius:5px;color:var(--text,var(--text-primary));font-size:.9rem}
-.mn-lista a:hover{background:var(--grid)}
-.mn-lista a[aria-current]{background:var(--accent-soft);font-weight:600}
-@media (max-width:640px){.mn-marca{width:100%}.mn-grupo{position:static}.mn-lista{left:16px;right:16px;max-width:none}}
-[id]{scroll-margin-top:60px}
-@media print{.mn{display:none}}
-/*/menu*/
 </style>
 </head>
 <body>
-<!--menu-->
-<nav class="mn" aria-label="Navegação do projeto"><div class="mn-in"><a class="mn-marca" href="resumo_experimentos.html">Leishmania · Doutorado</a><a class="mn-item" href="resumo_experimentos.html" aria-current="page">Resumo</a><a class="mn-item" href="01_preprocessamento/README.html">Pré-processamento</a><details class="mn-grupo"><summary class="mn-item">Datasets</summary><div class="mn-lista"><a href="00_dataset_cvat/README.html">00_dataset_cvat (dados brutos do CVAT)</a><a href="02_datasets_derivados/README.html">Visão geral dos datasets derivados</a><a href="02_datasets_derivados/01_imagens_macrofagos_infectados/README.html">01_imagens_macrofagos_infectados</a><a href="02_datasets_derivados/02_recortes_512/README.html">02_recortes_512</a><a href="02_datasets_derivados/03_recortes_512_sem_macrofago/README.html">03_recortes_512_sem_macrofago</a><a href="02_datasets_derivados/04_recortes_512_sem_macrofago_reinhard/README.html">04_recortes_512_sem_macrofago_reinhard</a><a href="02_datasets_derivados/05_recortes_512_macrofago_cor_fundo/README.html">05_recortes_512_macrofago_cor_fundo</a><a href="03_experimentos%20anteriores/datasets_derivados/README.html">Variantes antigas (exp06, exp07)</a></div></details><details class="mn-grupo"><summary class="mn-item">Experimentos anteriores</summary><div class="mn-lista"><a href="03_experimentos%20anteriores/README.html">Índice exp01–exp09</a><a href="03_experimentos%20anteriores/exp01_yolo11n/README.html">exp01 · YOLO11n, recorte original</a><a href="03_experimentos%20anteriores/exp02_yolo11n_p2/README.html">exp02 · YOLO11n + cabeça P2, imgsz 640</a><a href="03_experimentos%20anteriores/exp03_yolo11l/README.html">exp03 · YOLO11l, recorte original</a><a href="03_experimentos%20anteriores/exp04_yolo26m/README.html">exp04 · YOLO26m</a><a href="03_experimentos%20anteriores/exp05_yolo26l/README.html">exp05 · YOLO26l</a><a href="03_experimentos%20anteriores/exp06_yolo11m_realce/README.html">exp06 · YOLO11m + realce CLAHE + aumento de dados</a><a href="03_experimentos%20anteriores/exp07_yolo11l_lab/README.html">exp07 · YOLO11l + Lab puro + batch 4</a><a href="03_experimentos%20anteriores/exp08_yolo11n_sem_macrofago/README.html">exp08 · YOLO11n, recorte sem macrófago</a><a href="03_experimentos%20anteriores/exp09_yolo11l_sem_macrofago/README.html">exp09 · YOLO11l, recorte sem macrófago</a></div></details><details class="mn-grupo"><summary class="mn-item">Novos experimentos</summary><div class="mn-lista"><a href="05_novos_experimentos/README.html">Índice, status e plano</a><a href="05_novos_experimentos/exp10_yolov8l_sem_macrofago/README.html">exp10 · YOLOv8l sobre os recortes sem macrófago</a><a href="05_novos_experimentos/exp11_yolo11n_reinhard/README.html">exp11 · YOLO11n sobre os recortes com coloração normalizada (Reinhard)</a><a href="05_novos_experimentos/exp12_yolo11n_aumento_hed/README.html">exp12 · YOLO11n com aumento de cor HED no treino</a><a href="05_novos_experimentos/exp13_yolo11n_mascara_cor_fundo/README.html">exp13 · YOLO11n sobre os recortes com o macrófago preenchido pela cor do fundo</a><a href="05_novos_experimentos/exp14_yolo11n_imgsz1024/README.html">exp14 · YOLO11n com imgsz 1024</a></div></details></div></nav>
-<script>document.addEventListener("click",function(e){document.querySelectorAll(".mn-grupo[open]").forEach(function(d){if(!d.contains(e.target))d.removeAttribute("open")})});document.querySelectorAll(".mn-grupo").forEach(function(d){d.addEventListener("toggle",function(){if(d.open)document.querySelectorAll(".mn-grupo[open]").forEach(function(o){if(o!==d)o.removeAttribute("open")})})});</script>
-<!--/menu-->
+<!--menu--><script src="menu.js"></script><!--/menu-->
 <main>
   <header>
     <h1>Detecção de amastigotas fora do macrófago</h1>
@@ -198,9 +176,9 @@ summary.mn-item::after{content:" ▾";font-size:.8em}
   </header>
 
   <div class="kpis">
-    <div class="kpi"><div class="label">Melhor mAP50</div><div class="value">0.496</div><div class="note">exp12 · YOLO11n + aumento HED (exp08–14 entre 0.485 e 0.496, dentro do ruído)</div></div>
-    <div class="kpi"><div class="label">Melhor custo-benefício</div><div class="value">0.485</div><div class="note">exp08 · YOLO11n sem macrófago</div></div>
-    <div class="kpi"><div class="label">Melhor mAP50-95</div><div class="value">0.199</div><div class="note">exp14 · YOLO11n imgsz 1024</div></div>
+    <div class="kpi"><div class="label">Melhor mAP50</div><div class="value">0.510</div><div class="note">exp15 · YOLO11l + Optuna (exp08–16 entre 0.485 e 0.510, dentro do ruído)</div></div>
+    <div class="kpi"><div class="label">Melhor custo-benefício</div><div class="value">0.509</div><div class="note">exp16 · YOLO11n + hiperparâmetros do exp15 (20 min de treino)</div></div>
+    <div class="kpi"><div class="label">Melhor mAP50-95</div><div class="value">0.199</div><div class="note">exp14 (YOLO11n imgsz 1024) e exp15 (YOLO11l + Optuna)</div></div>
     <div class="kpi"><div class="label">Patamar com macrófago visível</div><div class="value">0.39–0.44</div><div class="note">exp01–07, qualquer modelo</div></div>
     <div class="kpi"><div class="label">Base de dados</div><div class="value">8 lâminas</div><div class="note">1.568 recortes 512×512</div></div>
   </div>
@@ -244,12 +222,14 @@ summary.mn-item::after{content:" ▾";font-size:.8em}
   <section class="card" id="conclusoes">
     <h2>Conclusões</h2>
     <ol class="concl">
-      <li><strong>Mascarar a região do macrófago foi a única mudança que ajudou de forma clara.</strong> O mAP50 subiu de 0.39–0.44 (exp01–07) para 0.485–0.496 (exp08–14), e as quatro métricas melhoraram ao mesmo tempo. A explicação provável é que a máscara elimina a confusão entre amastigota intra e extracelular.</li>
+      <li><strong>Mascarar a região do macrófago foi a única mudança que ajudou de forma clara.</strong> O mAP50 subiu de 0.39–0.44 (exp01–07) para 0.485–0.510 (exp08–16), e as quatro métricas melhoraram ao mesmo tempo. A explicação provável é que a máscara elimina a confusão entre amastigota intra e extracelular.</li>
       <li><strong>Tamanho e arquitetura do modelo não importaram.</strong> Do nano (2,6M) ao large (26M), com YOLO11, YOLO26 ou cabeça P2, todos ficaram no mesmo patamar. O exp09 (large) superou o exp08 (nano) por apenas +0.008 de mAP50, com desvio maior. O exp10 confirmou isso com outra geração: o YOLOv8l (43,6M) deu 0.489, entre os dois. O <strong>YOLO11n</strong> treina cerca de 5× mais rápido e é o melhor custo-benefício.</li>
       <li><strong>Espaço de cor, CLAHE, P2, imgsz 640, lr menor e batch menor não trouxeram ganho na média.</strong> A diferença ficou dentro do desvio entre folds. O aumento de dados mais forte (exp06) deu o melhor recall entre as configurações com o macrófago visível.</li>
       <li><strong>Pré-processamento sobre o recorte mascarado também não mudou a média (exp11–14).</strong> Normalizar a cor (Reinhard), aumento de cor HED, pintar o macrófago com a cor do fundo e imgsz 1024 ficaram entre +0.002 e +0.011 do exp08, dentro do ruído. Sinais por lâmina: o Reinhard (exp11) deu o melhor valor da série na <code>leish_4</code> (0.226), e o imgsz 1024 (exp14) deu o melhor mAP50-95 (0.199).</li>
+      <li><strong>Otimizar os hiperparâmetros com o Optuna (exp15) deu a maior média da série, mas ainda no ruído.</strong> Com o YOLO11l e busca aninhada por fold, o mAP50 foi 0.510 ± 0.115, +0.017 sobre o exp09, com 4 de 6 folds melhores e desvio menor. A busca indicou padrões consistentes: lr0 menor (~1e-4), weight_decay menor, menos jitter de saturação (hsv_s ~0.2–0.4) e mais rotação (~30°).</li>
+      <li><strong>Os hiperparâmetros do Optuna servem para o YOLO11n (exp16).</strong> Aplicados sem nova busca, deram 0.509 ± 0.109 em 20 minutos, o mesmo patamar do exp15 (2,5 h) e +0.024 sobre o exp08, o maior ganho sobre essa base na série (4 de 6 folds e 6 de 8 lâminas melhores). O ganho vem dos hiperparâmetros, não do tamanho do modelo.</li>
       <li><strong>O limitante principal são os dados.</strong> O desvio entre folds (cerca de 0.10–0.15) é maior que qualquer ganho obtido. As lâminas <code>leish_3</code> (10 instâncias) e <code>leish_4</code> (mAP50 ≤ 0.23 em todos os experimentos) são sempre as piores, e a <code>leish_7</code> é sempre a melhor.</li>
-      <li><strong>Melhor configuração até aqui:</strong> recorte sem macrófago + YOLO11n, imgsz 512, AdamW, lr0 5e-4, cos_lr, 150 épocas, patience 40, com aumento de dados (hsv 0.03/0.9/0.6, degrees 15, flipud 0.5, mixup 0.1). As variações dos exp11–14 não superaram essa base de forma consistente.</li>
+      <li><strong>Melhor configuração até aqui (exp16):</strong> recorte sem macrófago + YOLO11n, imgsz 512, AdamW, cos_lr, 150 épocas, patience 40, flipud 0.5, com os hiperparâmetros escolhidos pelo Optuna no exp15 para cada fold (lr0 ~1e-4, weight_decay ~1e-5–1.5e-4, hsv_s ~0.2–0.4, degrees ~30 na maioria). Treina em ~20 minutos. A configuração anterior (exp08: lr0 5e-4, hsv 0.03/0.9/0.6, degrees 15, mixup 0.1) ficou 0.024 abaixo.</li>
     </ol>
 
     <h3 class="concl-h">O que os experimentos mostraram</h3>
@@ -336,7 +316,8 @@ summary.mn-item::after{content:" ▾";font-size:.8em}
 <pre class="tree">Doutorado/
 ├── resumo_experimentos.html     ← este resumo (referência de todos os experimentos)
 ├── README.md                   página inicial do repositório no GitHub (único .md do projeto)
-├── atualizar_menu.py           refaz a barra de menu de todas as páginas (rode após criar experimento, dataset ou README)
+├── menu.js                     barra de menu de todas as páginas (gerado; não editar à mão)
+├── atualizar_menu.py           regera o menu.js (rode após criar experimento, dataset ou README)
 ├── instruções reunião doutorado
 ├── 00_dataset_cvat/             dados brutos (8 lâminas anotadas no CVAT; README.html com classes e números)
 ├── 01_preprocessamento/         notebooks que geram os datasets (detalhes no README.html da pasta)
@@ -357,6 +338,8 @@ summary.mn-item::after{content:" ▾";font-size:.8em}
 └── 05_novos_experimentos/       exp10 em diante (README.html com o índice)
     ├── executar_fila.sh, fila.log   roda vários notebooks em sequência, desligado do editor
     ├── exp11_yolo11n_reinhard/ … exp14_yolo11n_imgsz1024/   mesma estrutura do exp10
+    ├── exp15_yolo11l_optuna/     idem + optuna/ (estudos.db, melhores_parametros.json)
+    ├── exp16_yolo11n_params_optuna/   YOLO11n com os parâmetros do exp15
     └── exp10_yolov8l_sem_macrofago/
         ├── exp10_yolov8l_sem_macrofago.ipynb, README.html, execucao.log, yolov8l.pt
         ├── folds_yolo/          estrutura YOLO dos 6 folds (links para 02_datasets_derivados)
@@ -377,7 +360,7 @@ summary.mn-item::after{content:" ▾";font-size:.8em}
     <p class="sub"><strong>Ao reexecutar um notebook de experimento antigo</strong> (exp01–exp09): eles têm caminhos absolutos antigos fixos no código, como <code>/mnt/arquivos/Doutorado/yolo_folds_leishmania</code> e <code>dataset_recortes_macrofagos_infectados</code>. Troque pelos atuais antes de rodar. A correspondência entre nomes antigos e novos está em <code>02_datasets_derivados/README.html</code>. Os links simbólicos e os <code>data.yaml</code> de <code>folds_yolo/</code> já apontam para os locais atuais.</p>
   </section>
 
-  <footer>Gerado em 17 nov. 2026 e atualizado em 18 nov. 2026 (resultados até o exp14) a partir dos notebooks e dos <code>args.yaml</code> dos treinos.</footer>
+  <footer>Gerado em 17 nov. 2026 e atualizado em 18 nov. 2026 (resultados até o exp16) a partir dos notebooks e dos <code>args.yaml</code> dos treinos.</footer>
 </main>
 <div id="tip" role="tooltip"></div>
 
@@ -411,17 +394,21 @@ const EXPS = [
     modelo: "YOLO11n", entrada: "macrófago preenchido com a cor do fundo", hp: "idem exp08" },
   { id: "14", nome: "YOLO11n imgsz 1024", mask: true, p: [.505,.128], r: [.554,.084], map50: [.489,.134], map5095: [.199,.052],
     modelo: "YOLO11n", entrada: "região do macrófago mascarada, ampliada 2×", hp: "idem exp08, imgsz 1024" },
+  { id: "15", nome: "YOLO11l + Optuna", mask: true, p: [.520,.116], r: [.569,.064], map50: [.510,.115], map5095: [.199,.040],
+    modelo: "YOLO11l", entrada: "região do macrófago mascarada", hp: "idem exp09; lr0, weight_decay, hsv_s/v, degrees, scale e mixup escolhidos pelo Optuna em cada fold (8 tentativas × 15 ép., só na lâmina de validação)" },
+  { id: "16", nome: "YOLO11n + params do exp15", mask: true, p: [.525,.110], r: [.566,.055], map50: [.509,.109], map5095: [.196,.039],
+    modelo: "YOLO11n", entrada: "região do macrófago mascarada", hp: "idem exp08 (batch 16), com os 7 hiperparâmetros escolhidos pelo Optuna no exp15 para cada fold (sem nova busca)" },
 ];
 const METRIC = { map50: "mAP50", map5095: "mAP50-95", p: "Precisão", r: "Recall" };
 const SLIDES = {
-  leish_1: [.393,.351,.326,.402,.354,.437,.403,.525,.553,.515,.558,.572,.490,.535],
-  leish_2: [.359,.282,.332,.304,.276,.317,.317,.399,.346,.361,.370,.347,.379,.349],
-  leish_3: [.256,.322,.181,.185,.110,.109,.366,.359,.352,.336,.170,.316,.277,.250],
-  leish_4: [.173,.189,.160,.105,.141,.137,.151,.184,.198,.178,.226,.164,.201,.171],
-  leish_5: [.523,.489,.505,.473,.388,.529,.520,.536,.583,.574,.565,.560,.532,.589],
-  leish_7: [.629,.605,.572,.623,.590,.622,.587,.672,.711,.652,.661,.688,.681,.684],
-  leish_8: [.326,.316,.301,.316,.311,.349,.283,.359,.324,.380,.336,.355,.350,.346],
-  leish_9: [.442,.468,.422,.440,.447,.485,.430,.590,.547,.544,.563,.575,.559,.528],
+  leish_1: [.393,.351,.326,.402,.354,.437,.403,.525,.553,.515,.558,.572,.490,.535,.518,.545],
+  leish_2: [.359,.282,.332,.304,.276,.317,.317,.399,.346,.361,.370,.347,.379,.349,.343,.392],
+  leish_3: [.256,.322,.181,.185,.110,.109,.366,.359,.352,.336,.170,.316,.277,.250,.272,.392],
+  leish_4: [.173,.189,.160,.105,.141,.137,.151,.184,.198,.178,.226,.164,.201,.171,.222,.187],
+  leish_5: [.523,.489,.505,.473,.388,.529,.520,.536,.583,.574,.565,.560,.532,.589,.600,.572],
+  leish_7: [.629,.605,.572,.623,.590,.622,.587,.672,.711,.652,.661,.688,.681,.684,.698,.688],
+  leish_8: [.326,.316,.301,.316,.311,.349,.283,.359,.324,.380,.336,.355,.350,.346,.373,.390],
+  leish_9: [.442,.468,.422,.440,.447,.485,.430,.590,.547,.544,.563,.575,.559,.528,.589,.535],
 };
 const LAM = { leish_1: [96,831], leish_2: [127,642], leish_3: [17,10], leish_4: [126,132], leish_5: [361,4725], leish_7: [280,2283], leish_8: [353,992], leish_9: [208,1073] };
 const FOLDS = [
@@ -432,7 +419,7 @@ const FOLDS = [
   [5,"leish_3, 4, 5, 8, 9","leish_2","leish_1, leish_7"],
   [6,"leish_3, 4, 5, 7, 9","leish_1","leish_2, leish_8"],
 ];
-const PASTA = {"01": "exp01_yolo11n", "02": "exp02_yolo11n_p2", "03": "exp03_yolo11l", "04": "exp04_yolo26m", "05": "exp05_yolo26l", "06": "exp06_yolo11m_realce", "07": "exp07_yolo11l_lab", "08": "exp08_yolo11n_sem_macrofago", "09": "exp09_yolo11l_sem_macrofago", "10": "05_novos_experimentos/exp10_yolov8l_sem_macrofago", "11": "05_novos_experimentos/exp11_yolo11n_reinhard", "12": "05_novos_experimentos/exp12_yolo11n_aumento_hed", "13": "05_novos_experimentos/exp13_yolo11n_mascara_cor_fundo", "14": "05_novos_experimentos/exp14_yolo11n_imgsz1024"};
+const PASTA = {"01": "exp01_yolo11n", "02": "exp02_yolo11n_p2", "03": "exp03_yolo11l", "04": "exp04_yolo26m", "05": "exp05_yolo26l", "06": "exp06_yolo11m_realce", "07": "exp07_yolo11l_lab", "08": "exp08_yolo11n_sem_macrofago", "09": "exp09_yolo11l_sem_macrofago", "10": "05_novos_experimentos/exp10_yolov8l_sem_macrofago", "11": "05_novos_experimentos/exp11_yolo11n_reinhard", "12": "05_novos_experimentos/exp12_yolo11n_aumento_hed", "13": "05_novos_experimentos/exp13_yolo11n_mascara_cor_fundo", "14": "05_novos_experimentos/exp14_yolo11n_imgsz1024", "15": "05_novos_experimentos/exp15_yolo11l_optuna", "16": "05_novos_experimentos/exp16_yolo11n_params_optuna"};
 const f3 = v => v.toFixed(3);
 const $ = id => document.getElementById(id);
 
