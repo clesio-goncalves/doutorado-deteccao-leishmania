@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experimento 08</title>
+<style>
+:root{color-scheme:light;--bg:#f6f6f4;--surface:#fcfcfb;--border:#e3e2dd;--grid:#ecebe7;--text:#0b0b0b;--text2:#52514e;--muted:#7a7974;--accent:#2a78d6;--accent-soft:#e8f1fc}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:32px 16px 64px}
+article{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+h1{font-size:1.6rem;margin:0 0 12px;letter-spacing:-.01em}
+h2{font-size:1.15rem;margin:28px 0 8px;padding-top:16px;border-top:1px solid var(--border)}
+h3{font-size:1rem;margin:20px 0 6px}
+p,li{color:var(--text)}
+a{color:var(--accent)}
+.crumb{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums;margin:10px 0}
+.tw{overflow-x:auto}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-weight:600;color:var(--text2);font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
+code{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:.84em;background:var(--grid);padding:1px 5px;border-radius:4px}
+pre{background:var(--grid);padding:14px;border-radius:8px;overflow-x:auto;font-size:.8rem;line-height:1.5}
+pre code{background:none;padding:0}
+strong{font-weight:650}
+td code{overflow-wrap:anywhere;word-break:break-word}
+td{min-width:90px}
+figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radius:8px;border:1px solid var(--border)}figcaption{font-size:.85rem;color:var(--text2);margin-top:6px}
+.legenda-cores i{display:inline-block;width:12px;height:12px;border:2px solid;vertical-align:-1px;margin:0 3px 0 8px}
+/*menu*/
+.mn{position:sticky;top:0;z-index:50;margin:0;display:block;background:var(--surface,var(--surface-1));border-bottom:1px solid var(--border);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.mn-in{max-width:1100px;margin:0 auto;padding:6px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px}
+.mn a{text-decoration:none;border-bottom:0}
+.mn-marca{font-weight:650;color:var(--text,var(--text-primary));margin-right:10px;padding:6px 0;white-space:nowrap}
+.mn-item{display:inline-block;padding:6px 10px;border-radius:6px;color:var(--text2,var(--text-secondary));cursor:pointer;white-space:nowrap;list-style:none}
+.mn-item::-webkit-details-marker{display:none}
+summary.mn-item::after{content:" ▾";font-size:.8em}
+.mn-item:hover{background:var(--grid);color:var(--text,var(--text-primary))}
+.mn-item[aria-current]{background:var(--accent-soft);color:var(--text,var(--text-primary));font-weight:600}
+.mn-grupo{position:relative}
+.mn-lista{position:absolute;left:0;top:calc(100% + 4px);min-width:260px;max-width:min(440px,90vw);max-height:70vh;overflow:auto;background:var(--surface,var(--surface-1));border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;display:flex;flex-direction:column}
+.mn-lista a{padding:7px 10px;border-radius:5px;color:var(--text,var(--text-primary));font-size:.9rem}
+.mn-lista a:hover{background:var(--grid)}
+.mn-lista a[aria-current]{background:var(--accent-soft);font-weight:600}
+@media (max-width:640px){.mn-marca{width:100%}.mn-grupo{position:static}.mn-lista{left:16px;right:16px;max-width:none}}
+[id]{scroll-margin-top:60px}
+@media print{.mn{display:none}}
+/*/menu*/
+</style>
+</head>
+<body>
+<!--menu-->
+<nav class="mn" aria-label="Navegação do projeto"><div class="mn-in"><a class="mn-marca" href="../../resumo_experimentos.html">Leishmania · Doutorado</a><a class="mn-item" href="../../resumo_experimentos.html">Resumo</a><a class="mn-item" href="../../01_preprocessamento/README.html">Pré-processamento</a><details class="mn-grupo"><summary class="mn-item">Datasets</summary><div class="mn-lista"><a href="../../00_dataset_cvat/README.html">00_dataset_cvat (dados brutos do CVAT)</a><a href="../../02_datasets_derivados/README.html">Visão geral dos datasets derivados</a><a href="../../02_datasets_derivados/01_imagens_macrofagos_infectados/README.html">01_imagens_macrofagos_infectados</a><a href="../../02_datasets_derivados/02_recortes_512/README.html">02_recortes_512</a><a href="../../02_datasets_derivados/03_recortes_512_sem_macrofago/README.html">03_recortes_512_sem_macrofago</a><a href="../../02_datasets_derivados/04_recortes_512_sem_macrofago_reinhard/README.html">04_recortes_512_sem_macrofago_reinhard</a><a href="../../02_datasets_derivados/05_recortes_512_macrofago_cor_fundo/README.html">05_recortes_512_macrofago_cor_fundo</a><a href="../datasets_derivados/README.html">Variantes antigas (exp06, exp07)</a></div></details><details class="mn-grupo"><summary class="mn-item" aria-current="page">Experimentos anteriores</summary><div class="mn-lista"><a href="../README.html">Índice exp01–exp09</a><a href="../exp01_yolo11n/README.html">exp01 · YOLO11n, recorte original</a><a href="../exp02_yolo11n_p2/README.html">exp02 · YOLO11n + cabeça P2, imgsz 640</a><a href="../exp03_yolo11l/README.html">exp03 · YOLO11l, recorte original</a><a href="../exp04_yolo26m/README.html">exp04 · YOLO26m</a><a href="../exp05_yolo26l/README.html">exp05 · YOLO26l</a><a href="../exp06_yolo11m_realce/README.html">exp06 · YOLO11m + realce CLAHE + aumento de dados</a><a href="../exp07_yolo11l_lab/README.html">exp07 · YOLO11l + Lab puro + batch 4</a><a href="README.html" aria-current="page">exp08 · YOLO11n, recorte sem macrófago</a><a href="../exp09_yolo11l_sem_macrofago/README.html">exp09 · YOLO11l, recorte sem macrófago</a></div></details><details class="mn-grupo"><summary class="mn-item">Novos experimentos</summary><div class="mn-lista"><a href="../../05_novos_experimentos/README.html">Índice, status e plano</a><a href="../../05_novos_experimentos/exp10_yolov8l_sem_macrofago/README.html">exp10 · YOLOv8l sobre os recortes sem macrófago</a><a href="../../05_novos_experimentos/exp11_yolo11n_reinhard/README.html">exp11 · YOLO11n sobre os recortes com coloração normalizada (Reinhard)</a><a href="../../05_novos_experimentos/exp12_yolo11n_aumento_hed/README.html">exp12 · YOLO11n com aumento de cor HED no treino</a><a href="../../05_novos_experimentos/exp13_yolo11n_mascara_cor_fundo/README.html">exp13 · YOLO11n sobre os recortes com o macrófago preenchido pela cor do fundo</a><a href="../../05_novos_experimentos/exp14_yolo11n_imgsz1024/README.html">exp14 · YOLO11n com imgsz 1024</a></div></details></div></nav>
+<script>document.addEventListener("click",function(e){document.querySelectorAll(".mn-grupo[open]").forEach(function(d){if(!d.contains(e.target))d.removeAttribute("open")})});document.querySelectorAll(".mn-grupo").forEach(function(d){d.addEventListener("toggle",function(){if(d.open)document.querySelectorAll(".mn-grupo[open]").forEach(function(o){if(o!==d)o.removeAttribute("open")})})});</script>
+<!--/menu-->
+<main>
+<div class="crumb"><a href="../../resumo_experimentos.html">Resumo dos experimentos</a> / <a href="../README.html">03_experimentos anteriores</a> / exp08_yolo11n_sem_macrofago</div>
+<article>
+<h1>exp08 — YOLO11n, recorte sem macrófago</h1>
+<div class="tw"><table><tbody>
+<tr><td><strong>Modelo</strong></td><td>YOLO11n</td></tr>
+<tr><td><strong>Entrada</strong></td><td>região do macrófago mascarada</td></tr>
+<tr><td><strong>Hiperparâmetros</strong></td><td>idem exp06 (AdamW, lr0 5e-4, aug forte), batch 16</td></tr>
+<tr><td><strong>Validação</strong></td><td>6 folds por lâmina (5 de treino, 1 de validação e 2 de teste), a mesma divisão de todos os experimentos</td></tr>
+</tbody></table></div>
+<h2>Resultado</h2>
+<p>Conjunto de teste, média ± desvio padrão nos 6 folds.</p>
+<div class="tw"><table>
+<thead><tr><th>Precisão</th><th>Recall</th><th>mAP50</th><th>mAP50-95</th></tr></thead>
+<tbody><tr><td>0,508 ± 0,102</td><td>0,547 ± 0,074</td><td><strong>0,485 ± 0,109</strong></td><td>0,184 ± 0,039</td></tr></tbody></table></div>
+<h2>Detalhes</h2>
+<h3>Objetivo</h3><p>Testar a remoção da região do macrófago da imagem. No notebook, é o "experimento 7".</p>
+        <h3>O que foi feito</h3><ul><li><strong>Dataset com o macrófago mascarado</strong> (<code>03_recortes_512_sem_macrofago</code>): a bbox de cada <code>macrophage</code> é pintada de preto, as anotações <code>macrophage</code>/<code>inside-macrophage</code> são removidas, e <code>leishmania</code> e <code>Non-macrophages</code> são mantidas. Como o recorte é centrado no macrófago infectado, essa região está cheia de leishmanias <em>intracelulares</em>, que se parecem com o alvo mas não devem ser detectadas. Apagar a região tira essa ambiguidade. 339 recortes ficaram sem nenhuma anotação e servem de exemplos negativos.</li>
+<li><strong>YOLO11n</strong>, RGB original (sem CLAHE/Lab), com a receita de aumento de dados e otimizador do exp06: AdamW, lr0 5e-4, <code>cos_lr</code>, 150 épocas, patience 40, batch 16.</li></ul>
+        <h3>Exemplo da entrada</h3><figure class="ex"><a href="figuras/entrada_sem_macrofago.jpg" target="_blank"><img src="figuras/entrada_sem_macrofago.jpg" alt="Original e mascarado" loading="lazy"></a><figcaption>Linha de cima: recorte original com todas as anotações. Linha de baixo: recorte com o macrófago mascarado (<code>03_recortes_512_sem_macrofago</code>), como a rede recebe nos exp08–10. A área apagada é justamente a que tem as leishmanias intracelulares (laranja), que confundiam o modelo; só o alvo (amarelo) continua anotado. <span class="legenda-cores"><i style="border-color:#ffd400"></i>leishmania fora do macrófago (alvo)<i style="border-color:#ff8c00"></i>leishmania dentro do macrófago (ignorada)<i style="border-color:#ff0000"></i>macrófago</span>.</figcaption></figure>
+        <h3>Por lâmina (mAP50)</h3><p>Melhor: leish_7 (0,672). Pior: leish_4 (0,184). leish_3: 0,359, no topo da faixa dela.</p>
+        <h3>Épocas por fold (total / melhor)</h3><p>fold 1: 103/63 · fold 2: 52/12 · fold 3: 96/56 · fold 4: 127/87 · fold 5: 83/43 · fold 6: 92/52</p>
+        <h3>Observações</h3><ul><li><strong>O primeiro salto da série</strong>: foi o primeiro experimento a superar todos os anteriores nas quatro métricas ao mesmo tempo.</li><li>Todos os folds pararam por early stopping.</li><li>Ressalva: em relação ao exp01, mudaram a máscara e a receita de aumento de dados. Mas a receita sozinha, no exp06, não deu esse salto, o que aponta a máscara como causa.</li><li>É a <strong>base dos exp11–exp14</strong>.</li></ul>
+        <p class="sub" style="margin-top:8px">Período: ago. 2026 · Notebook: <code>03_experimentos anteriores/exp08_yolo11n_sem_macrofago/deteccao_yolov11n_sem_macrofago.ipynb</code></p>
+<h3>mAP50 por lâmina</h3>
+<p>Média entre os folds em que a lâmina caiu no teste.</p>
+<div class="tw"><table><thead><tr><th>Lâmina</th><th>mAP50</th></tr></thead><tbody><tr><td>leish_1</td><td>0,525</td></tr><tr><td>leish_2</td><td>0,399</td></tr><tr><td>leish_3</td><td>0,359</td></tr><tr><td>leish_4</td><td>0,184</td></tr><tr><td>leish_5</td><td>0,536</td></tr><tr><td>leish_7</td><td>0,672</td></tr><tr><td>leish_8</td><td>0,359</td></tr><tr><td>leish_9</td><td>0,590</td></tr></tbody></table></div>
+<p style="margin-top:20px"><a href="../exp07_yolo11l_lab/README.html">← exp07</a> · <a href="../exp09_yolo11l_sem_macrofago/README.html">exp09 →</a></p>
+</article>
+</main>
+</body>
+</html>

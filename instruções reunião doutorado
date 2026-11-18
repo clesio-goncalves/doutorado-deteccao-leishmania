@@ -1,0 +1,39 @@
+testar com imagens com tamanho de 640 e 1080
+
+Algoritmo da emily retorna os macrofagos infectados
+
+roda nas imagens inteiras 
+
+traçar um raio nos macrofagos infectados e detectar as leishmanias somente no raio
+
+não considerar as leismanias dentro do macrofagos
+
+Yolo v11 - testar ela nas imagens (começar pela nano).
+
+usar folds de rafael
+
+Adicionar a carol a UFPI
+
+
+
+
+
+
+-----
+Fazer a avaliação por lâmina
+
+
+
+---- Mensagem Rafael
+1. Eu recebo as imagens da lâmina, detecto os macrófagos, recorto eles e passo pra vivi
+2. A vivi classifica os recortes em macrófago e não macrófago (para remover os falsos positivos)
+3. A Emily classifica entre macrófago infectado ou não infectado (isso por si só já dá o diagnóstico)
+4. O Armando detecta e conta as amastigotas dentro do macrófago
+5. Tu detecta e conta as amastigotas fora dos macrófagos para auxiliar na definição do grau da infecção.
+
+
+
+
+----- Reunião dia 10 ago. 2026
+- Utilizar a validação binária por lâmina para verificar se foi encontrato ou não leishmanias no recorte
+- 

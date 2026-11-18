@@ -1,0 +1,58 @@
+# ===========================================================================
+# Repositório do doutorado: versiona código, notebooks, documentação (HTML),
+# figuras dos READMEs e métricas dos treinos. Fica de fora tudo que é grande
+# e pode ser regerado (datasets derivados, folds) ou guardado em outro lugar
+# (dados brutos, pesos dos modelos).
+# ===========================================================================
+
+# --- Dados brutos do CVAT (2,7 GB): guardar backup fora do git --------------
+00_dataset_cvat/*
+!00_dataset_cvat/README.html
+!00_dataset_cvat/figuras/
+
+# --- Datasets derivados (2,9 GB): regerados pelos notebooks de 01_preprocessamento
+#     Ficam só os README.html e as figuras de exemplo.
+02_datasets_derivados/*/*
+!02_datasets_derivados/*/README.html
+!02_datasets_derivados/figuras/*
+03_experimentos anteriores/datasets_derivados/*/*
+!03_experimentos anteriores/datasets_derivados/*/README.html
+
+# --- Estrutura YOLO dos folds: recriada por cada notebook de experimento -----
+folds_yolo/
+
+# --- Pesos dos modelos (5,7 GB): guardar fora do git se precisar -----------
+*.pt
+*.pth
+*.onnx
+weights/
+
+# --- Saídas de treino: mantém só métricas e configuração --------------------
+#     (results.csv, args.yaml, concluido.txt); ignora gráficos e batches.
+**/runs/**/*.jpg
+**/runs/**/*.png
+*.cache
+
+# --- Legado: saídas avulsas de model.val() e backup antigo ------------------
+03_experimentos anteriores/legado/runs_val_avulsos/
+03_experimentos anteriores/legado/backup_servidor_ufpi/**/*.pt
+
+# --- Logs de execução --------------------------------------------------------
+*.log
+nohup.out
+
+# --- Python / Jupyter / editores ---------------------------------------------
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.vscode/
+.idea/
+*.swp
+
+# --- Configuração local do Claude Code ---------------------------------------
+.claude/
+
+# --- Sistema ----------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini

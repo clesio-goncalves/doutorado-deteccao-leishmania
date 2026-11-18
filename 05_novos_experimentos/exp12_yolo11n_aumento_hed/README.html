@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experimento 12</title>
+<style>
+:root{color-scheme:light;--bg:#f6f6f4;--surface:#fcfcfb;--border:#e3e2dd;--grid:#ecebe7;--text:#0b0b0b;--text2:#52514e;--muted:#7a7974;--accent:#2a78d6;--accent-soft:#e8f1fc}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:32px 16px 64px}
+article{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+h1{font-size:1.6rem;margin:0 0 12px;letter-spacing:-.01em}
+h2{font-size:1.15rem;margin:28px 0 8px;padding-top:16px;border-top:1px solid var(--border)}
+h3{font-size:1rem;margin:20px 0 6px}
+p,li{color:var(--text)}
+a{color:var(--accent)}
+.crumb{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums;margin:10px 0}
+.tw{overflow-x:auto}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-weight:600;color:var(--text2);font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
+code{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:.84em;background:var(--grid);padding:1px 5px;border-radius:4px}
+pre{background:var(--grid);padding:14px;border-radius:8px;overflow-x:auto;font-size:.8rem;line-height:1.5}
+pre code{background:none;padding:0}
+strong{font-weight:650}
+td code{overflow-wrap:anywhere;word-break:break-word}
+td{min-width:90px}
+figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radius:8px;border:1px solid var(--border)}figcaption{font-size:.85rem;color:var(--text2);margin-top:6px}
+/*menu*/
+.mn{position:sticky;top:0;z-index:50;margin:0;display:block;background:var(--surface,var(--surface-1));border-bottom:1px solid var(--border);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.mn-in{max-width:1100px;margin:0 auto;padding:6px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px}
+.mn a{text-decoration:none;border-bottom:0}
+.mn-marca{font-weight:650;color:var(--text,var(--text-primary));margin-right:10px;padding:6px 0;white-space:nowrap}
+.mn-item{display:inline-block;padding:6px 10px;border-radius:6px;color:var(--text2,var(--text-secondary));cursor:pointer;white-space:nowrap;list-style:none}
+.mn-item::-webkit-details-marker{display:none}
+summary.mn-item::after{content:" ▾";font-size:.8em}
+.mn-item:hover{background:var(--grid);color:var(--text,var(--text-primary))}
+.mn-item[aria-current]{background:var(--accent-soft);color:var(--text,var(--text-primary));font-weight:600}
+.mn-grupo{position:relative}
+.mn-lista{position:absolute;left:0;top:calc(100% + 4px);min-width:260px;max-width:min(440px,90vw);max-height:70vh;overflow:auto;background:var(--surface,var(--surface-1));border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;display:flex;flex-direction:column}
+.mn-lista a{padding:7px 10px;border-radius:5px;color:var(--text,var(--text-primary));font-size:.9rem}
+.mn-lista a:hover{background:var(--grid)}
+.mn-lista a[aria-current]{background:var(--accent-soft);font-weight:600}
+@media (max-width:640px){.mn-marca{width:100%}.mn-grupo{position:static}.mn-lista{left:16px;right:16px;max-width:none}}
+[id]{scroll-margin-top:60px}
+@media print{.mn{display:none}}
+/*/menu*/
+</style>
+</head>
+<body>
+<!--menu-->
+<nav class="mn" aria-label="Navegação do projeto"><div class="mn-in"><a class="mn-marca" href="../../resumo_experimentos.html">Leishmania · Doutorado</a><a class="mn-item" href="../../resumo_experimentos.html">Resumo</a><a class="mn-item" href="../../01_preprocessamento/README.html">Pré-processamento</a><details class="mn-grupo"><summary class="mn-item">Datasets</summary><div class="mn-lista"><a href="../../00_dataset_cvat/README.html">00_dataset_cvat (dados brutos do CVAT)</a><a href="../../02_datasets_derivados/README.html">Visão geral dos datasets derivados</a><a href="../../02_datasets_derivados/01_imagens_macrofagos_infectados/README.html">01_imagens_macrofagos_infectados</a><a href="../../02_datasets_derivados/02_recortes_512/README.html">02_recortes_512</a><a href="../../02_datasets_derivados/03_recortes_512_sem_macrofago/README.html">03_recortes_512_sem_macrofago</a><a href="../../02_datasets_derivados/04_recortes_512_sem_macrofago_reinhard/README.html">04_recortes_512_sem_macrofago_reinhard</a><a href="../../02_datasets_derivados/05_recortes_512_macrofago_cor_fundo/README.html">05_recortes_512_macrofago_cor_fundo</a><a href="../../03_experimentos%20anteriores/datasets_derivados/README.html">Variantes antigas (exp06, exp07)</a></div></details><details class="mn-grupo"><summary class="mn-item">Experimentos anteriores</summary><div class="mn-lista"><a href="../../03_experimentos%20anteriores/README.html">Índice exp01–exp09</a><a href="../../03_experimentos%20anteriores/exp01_yolo11n/README.html">exp01 · YOLO11n, recorte original</a><a href="../../03_experimentos%20anteriores/exp02_yolo11n_p2/README.html">exp02 · YOLO11n + cabeça P2, imgsz 640</a><a href="../../03_experimentos%20anteriores/exp03_yolo11l/README.html">exp03 · YOLO11l, recorte original</a><a href="../../03_experimentos%20anteriores/exp04_yolo26m/README.html">exp04 · YOLO26m</a><a href="../../03_experimentos%20anteriores/exp05_yolo26l/README.html">exp05 · YOLO26l</a><a href="../../03_experimentos%20anteriores/exp06_yolo11m_realce/README.html">exp06 · YOLO11m + realce CLAHE + aumento de dados</a><a href="../../03_experimentos%20anteriores/exp07_yolo11l_lab/README.html">exp07 · YOLO11l + Lab puro + batch 4</a><a href="../../03_experimentos%20anteriores/exp08_yolo11n_sem_macrofago/README.html">exp08 · YOLO11n, recorte sem macrófago</a><a href="../../03_experimentos%20anteriores/exp09_yolo11l_sem_macrofago/README.html">exp09 · YOLO11l, recorte sem macrófago</a></div></details><details class="mn-grupo"><summary class="mn-item" aria-current="page">Novos experimentos</summary><div class="mn-lista"><a href="../README.html">Índice, status e plano</a><a href="../exp10_yolov8l_sem_macrofago/README.html">exp10 · YOLOv8l sobre os recortes sem macrófago</a><a href="../exp11_yolo11n_reinhard/README.html">exp11 · YOLO11n sobre os recortes com coloração normalizada (Reinhard)</a><a href="README.html" aria-current="page">exp12 · YOLO11n com aumento de cor HED no treino</a><a href="../exp13_yolo11n_mascara_cor_fundo/README.html">exp13 · YOLO11n sobre os recortes com o macrófago preenchido pela cor do fundo</a><a href="../exp14_yolo11n_imgsz1024/README.html">exp14 · YOLO11n com imgsz 1024</a></div></details></div></nav>
+<script>document.addEventListener("click",function(e){document.querySelectorAll(".mn-grupo[open]").forEach(function(d){if(!d.contains(e.target))d.removeAttribute("open")})});document.querySelectorAll(".mn-grupo").forEach(function(d){d.addEventListener("toggle",function(){if(d.open)document.querySelectorAll(".mn-grupo[open]").forEach(function(o){if(o!==d)o.removeAttribute("open")})})});</script>
+<!--/menu-->
+<main>
+<div class="crumb"><a href="../../resumo_experimentos.html">Resumo dos experimentos</a> / <a href="../README.html">05_novos_experimentos</a> / exp12_yolo11n_aumento_hed</div>
+<article>
+<h1>exp12 — YOLO11n com aumento de cor HED no treino</h1>
+<p><strong>Objetivo:</strong> repetir o exp08 (YOLO11n sobre os recortes com o macrófago mascarado; mAP50 0,485 ± 0,109) mudando um único fator: o <strong>aumento de dados</strong>: perturbação de coloração no espaço HED (Tellez et al., 2018) em 80% das imagens de treino, com fator U(0,9; 1,1) e deslocamento U(−0,02; 0,02) por canal.</p>
+<p><strong>Hipótese:</strong> Em vez de igualar a cor das imagens (exp11), ensinar o modelo a ignorar a cor, mostrando no treino variações parecidas com as que existem entre lâminas. A intensidade foi escolhida visualmente, para não gerar cores irreais. A comparação com as lâminas reais (figura 3, abaixo) mostrou depois que ela cobre a variação do grupo roxo, mas não o tom acinzentado da leish_1 e da leish_4.</p>
+<h2>O que é a perturbação de coloração no espaço HED</h2>
+<p>É uma forma de variar a cor das imagens durante o treino imitando o que acontece numa lâmina corada de verdade: a cor muda porque cada lâmina absorveu mais ou menos corante.</p>
+<h3>O espaço HED</h3>
+<ul>
+<li>Uma foto de microscópio é gravada em RGB (vermelho, verde, azul), mas a cor que se vê vem dos <strong>corantes</strong> que ficaram no tecido.</li>
+<li>A <em>deconvolução de cor</em> (Ruifrok e Johnston, 2001) faz a conta inversa: para cada pixel, estima <strong>quanto de cada corante</strong> existe ali.</li>
+<li><strong>HED</strong> são os três canais dessa conversão: <strong>H</strong>ematoxilina, <strong>E</strong>osina e <strong>D</strong>AB, os corantes da histologia clássica. Em vez de "quanto vermelho, verde e azul", cada pixel passa a ser "quanto de cada corante". No código, a conversão é feita por <code>skimage.color.rgb2hed</code> e <code>hed2rgb</code>.</li>
+</ul>
+<h3>A perturbação</h3>
+<ol>
+<li>A imagem de treino é convertida de RGB para HED.</li>
+<li>A quantidade de cada corante é sorteada um pouco para cima ou para baixo:
+<ul>
+<li>um <strong>fator</strong> multiplica o canal (sorteado entre 0,9 e 1,1, ou seja, até 10% a mais ou a menos de corante);</li>
+<li>um <strong>deslocamento</strong> pequeno é somado (sorteado entre −0,02 e +0,02).</li>
+</ul></li>
+<li>A imagem volta para RGB. Os pixels pretos (a região do macrófago mascarada) continuam pretos.</li>
+</ol>
+<p>O resultado parece a mesma imagem vinda de uma lâmina <strong>corada com mais ou menos intensidade</strong>. As células, os parasitas e as caixas não mudam de lugar; só muda a "tinta". A perturbação é aplicada em 80% das imagens de treino.</p>
+<h3>Diferença para o jitter HSV, que já era usado</h3>
+<ul>
+<li>O jitter <strong>HSV</strong> (hsv_h 0.03, hsv_s 0.9, hsv_v 0.6, mantido aqui igual ao exp08) gira o matiz e muda saturação e brilho da imagem inteira. Isso pode gerar cores que nunca aparecem numa lâmina, como esverdeadas ou alaranjadas.</li>
+<li>O <strong>HED</strong> muda a cor seguindo a lógica dos corantes, e por isso tende a gerar cores plausíveis para uma lâmina corada.</li>
+</ul>
+<h3>Escolha da intensidade</h3>
+<p>Foram comparadas três intensidades numa mesma imagem da leish_7: fator ±0,05 / deslocamento ±0,01; ±0,1 / ±0,02; e ±0,2 / ±0,04. A primeira quase não muda a imagem, e a última gera cores irreais (rosa saturado, azul-claro). A intermediária, ±0,1 / ±0,02, foi a escolhida, porque produz variações dentro da faixa observada entre as lâminas. <strong>Limitação verificada depois:</strong> comparando a cor média da leish_7 inteira depois de cada sorteio com a cor média de cada lâmina real (figura 3), o aumento clareia, escurece e desloca entre roxo e rosa, mas não produz o tom acinzentado da leish_1 e da leish_4. Se o exp12 não der ganho, uma opção é perturbar também a saturação, ou combinar o aumento com a normalização do exp11.</p>
+<h3>Observações</h3>
+<ul>
+<li>Só acontece <strong>durante o treino</strong>, com um novo sorteio a cada vez que a imagem é carregada. Nenhum arquivo de imagem é alterado, e validação e teste usam as imagens originais.</li>
+<li>O Ultralytics não tem esse aumento. Ele foi inserido no pipeline de treino pelo próprio notebook, substituindo a função <code>v8_transforms</code>, logo antes do jitter HSV. Um treino curto de teste confirmou que a perturbação é chamada em todas as imagens de treino. A substituição continua valendo depois do <code>close_mosaic</code> (últimas 10 épocas).</li>
+<li>O HED foi criado para H&amp;E, e estas lâminas são coradas com Giemsa, então os canais não correspondem exatamente aos corantes usados. Mesmo assim, as variações geradas ficaram realistas, e por isso o método é usado como aumento de dados genérico. Se o exp12 der ganho, um próximo passo é adaptar a decomposição aos corantes do Giemsa.</li>
+<li>Referência: Tellez et al., 2018, <em>Whole-slide mitosis detection in H&amp;E breast histology using PHH3 as a reference to train distilled stain-invariant convolutional networks</em>, que introduziu essa perturbação ("HED jitter").</li>
+</ul>
+<p><strong>Por que partir do exp08:</strong> os exp08, exp09 e exp10 mostraram que o modelo não muda o resultado (0,485 a 0,493), e o YOLO11n treina cerca de 5× mais rápido que os modelos large.</p>
+<div class="tw"><table><tbody>
+<tr><td><strong>Notebook</strong></td><td><code>exp12_yolo11n_aumento_hed.ipynb</code></td></tr>
+<tr><td><strong>Dataset</strong></td><td><code>02_datasets_derivados/03_recortes_512_sem_macrofago/</code> (gerado por <code>01_preprocessamento/03_mascarar_macrofago_nos_recortes.ipynb</code>)</td></tr>
+<tr><td><strong>Modelo</strong></td><td><code>yolo11n.pt</code> (pré-treinado COCO, 2,6M parâmetros)</td></tr>
+<tr><td><strong>Hiperparâmetros</strong></td><td>imgsz 512, 150 épocas, patience 40, batch 16, AdamW, lr0 5e-4, lrf 0.01, cos_lr, single_cls, seed 42; aumento de dados hsv 0.03/0.9/0.6, degrees 15, flipud 0.5, mixup 0.1; aumento HED (iguais ao exp08, exceto o fator testado)</td></tr>
+<tr><td><strong>Validação</strong></td><td>os mesmos 6 folds por lâmina dos experimentos anteriores, com métricas no teste agregadas por fold e por lâmina</td></tr>
+<tr><td><strong>Status</strong></td><td>concluído em 18 nov. 2026</td></tr>
+</tbody></table></div>
+<h2>Exemplos das imagens</h2>
+<h3>1. O que cada corante faz</h3>
+<figure><a href="figuras/hed_1_como_funciona.jpg" target="_blank"><img src="figuras/hed_1_como_funciona.jpg" alt="Efeito de cada corante"></a>
+<figcaption>Um recorte da leish_7 com um único corante alterado até o limite usado no treino. Mais <strong>H</strong> (hematoxilina) escurece e azula as células; menos H as clareia. O <strong>E</strong> (eosina) mexe mais no fundo: mais E deixa tudo mais escuro, menos E deixa o fundo claro e acinzentado.</figcaption></figure>
+<h3>2. Como as imagens chegam à rede no treino</h3>
+<figure><a href="figuras/hed_2_sorteios_treino.jpg" target="_blank"><img src="figuras/hed_2_sorteios_treino.jpg" alt="Sorteios do treino"></a>
+<figcaption>Em cada linha, o recorte original e 4 sorteios, como no treino: os três corantes mudam juntos, cada um com um valor sorteado. A cada época, a mesma imagem chega com uma coloração diferente; a forma das células e a posição dos parasitas não mudam.</figcaption></figure>
+<h3>3. A variação gerada é parecida com a diferença entre as lâminas?</h3>
+<figure><a href="figuras/hed_3_cores_reais_vs_sorteios.jpg" target="_blank"><img src="figuras/hed_3_cores_reais_vs_sorteios.jpg" alt="Cores reais e sorteios"></a>
+<figcaption><strong>A:</strong> a cor média de cada lâmina real. <strong>B:</strong> a cor média da leish_7 inteira depois do aumento: os dois extremos possíveis (todos os corantes no máximo ou no mínimo) e 7 sorteios. Os extremos são raros, porque exigem os três corantes no limite ao mesmo tempo.</figcaption></figure>
+<p><strong>O que as figuras mostram, em resumo:</strong></p>
+<ul>
+<li>O aumento deixa a lâmina <strong>mais clara ou mais escura</strong> e a desloca entre <strong>roxo e rosa</strong>.</li>
+<li>Isso cobre a variação do grupo roxo (leish_2, 3, 5, 7 e 9) e se aproxima da leish_8.</li>
+<li><strong>Não reproduz o tom acinzentado e desbotado da leish_1 e da leish_4</strong>, que são justamente duas das lâminas mais difíceis. O exp11 (normalização de cor) ataca exatamente essa diferença.</li>
+</ul>
+<h2>Resultado</h2>
+<p>Conjunto de teste, média ± desvio padrão nos 6 folds, comparado com o exp08 (a base). Diferenças menores que 0,03 estão dentro do ruído.</p>
+<div class="tw"><table><thead><tr><th>Métrica</th><th>exp12</th><th>exp08 (base)</th><th>Δ</th></tr></thead><tbody><tr><td>Precisão</td><td><strong>0,514 ± 0,110</strong></td><td>0,508 ± 0,102</td><td>+0,006</td></tr><tr><td>Recall</td><td><strong>0,555 ± 0,075</strong></td><td>0,547 ± 0,074</td><td>+0,008</td></tr><tr><td>mAP50</td><td><strong>0,496 ± 0,124</strong></td><td>0,485 ± 0,109</td><td>+0,011</td></tr><tr><td>mAP50-95</td><td><strong>0,190 ± 0,042</strong></td><td>0,184 ± 0,039</td><td>+0,006</td></tr></tbody></table></div>
+<h3>Conclusão</h3>
+<ul><li>mAP50 0,496 ± 0,124, +0,011 em relação ao exp08. É a <strong>maior média da série</strong>, mas ainda <strong>dentro do ruído</strong>. Foi melhor em 4 dos 6 folds.</li><li>Melhorou a leish_1 (+0,047) e a leish_7 (0,688). Piorou a leish_2 (−0,052) e a leish_4 (−0,020).</li><li>A piora na leish_4 é coerente com a limitação vista nas figuras: nesta intensidade, o aumento não gera o tom acinzentado dessa lâmina.</li><li>Conclusão: ganho pequeno e não conclusivo. Próximos testes possíveis: intensidade maior, perturbar também a saturação, ou combinar com a normalização do exp11.</li></ul>
+<h3>Por fold</h3>
+<div class="tw"><table><thead><tr><th>Fold</th><th>Lâminas de teste</th><th>Épocas (melhor)</th><th>P</th><th>R</th><th>mAP50</th><th>mAP50-95</th><th>Δ mAP50 vs exp08</th></tr></thead><tbody><tr><td>1</td><td>leish_3, leish_5</td><td>109/69</td><td>0,565</td><td>0,591</td><td>0,556</td><td>0,191</td><td>+0,022</td></tr><tr><td>2</td><td>leish_2, leish_7</td><td>134/94</td><td>0,603</td><td>0,625</td><td>0,607</td><td>0,229</td><td>+0,033</td></tr><tr><td>3</td><td>leish_1, leish_8</td><td>134/94</td><td>0,414</td><td>0,459</td><td>0,359</td><td>0,147</td><td>+0,006</td></tr><tr><td>4</td><td>leish_4, leish_9</td><td>113/73</td><td>0,467</td><td>0,586</td><td>0,470</td><td>0,197</td><td>−0,006</td></tr><tr><td>5</td><td>leish_1, leish_7</td><td>99/23</td><td>0,654</td><td>0,611</td><td>0,636</td><td>0,240</td><td>+0,025</td></tr><tr><td>6</td><td>leish_2, leish_8</td><td>145/105</td><td>0,379</td><td>0,460</td><td>0,349</td><td>0,137</td><td>−0,011</td></tr></tbody></table></div>
+<h3>mAP50 por lâmina</h3>
+<div class="tw"><table><thead><tr><th>Lâmina</th><th>Folds</th><th>exp08</th><th>exp12</th><th>Δ</th></tr></thead><tbody><tr><td>leish_1</td><td>3, 5</td><td>0,525</td><td>0,572</td><td>+0,047</td></tr><tr><td>leish_2</td><td>2, 6</td><td>0,399</td><td>0,347</td><td>−0,052</td></tr><tr><td>leish_3</td><td>1</td><td>0,359</td><td>0,316</td><td>−0,043</td></tr><tr><td>leish_4</td><td>4</td><td>0,184</td><td>0,164</td><td>−0,020</td></tr><tr><td>leish_5</td><td>1</td><td>0,536</td><td>0,560</td><td>+0,024</td></tr><tr><td>leish_7</td><td>2, 5</td><td>0,672</td><td>0,688</td><td>+0,016</td></tr><tr><td>leish_8</td><td>3, 6</td><td>0,359</td><td>0,355</td><td>−0,004</td></tr><tr><td>leish_9</td><td>4</td><td>0,590</td><td>0,575</td><td>−0,015</td></tr></tbody></table></div>
+<h2>Histórico</h2>
+<ul>
+<li>18 nov. 2026: criado a partir do plano de melhorias baseado nos exp01–exp10, e lançado na fila <code>executar_fila.sh</code> (exp11 → exp12 → exp13 → exp14).</li>
+<li>18 nov. 2026: execução concluída nos 6 folds; resultados registrados.</li>
+</ul>
+</article>
+</main>
+</body>
+</html>

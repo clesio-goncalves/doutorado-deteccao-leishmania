@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experimento 13</title>
+<style>
+:root{color-scheme:light;--bg:#f6f6f4;--surface:#fcfcfb;--border:#e3e2dd;--grid:#ecebe7;--text:#0b0b0b;--text2:#52514e;--muted:#7a7974;--accent:#2a78d6;--accent-soft:#e8f1fc}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:32px 16px 64px}
+article{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+h1{font-size:1.6rem;margin:0 0 12px;letter-spacing:-.01em}
+h2{font-size:1.15rem;margin:28px 0 8px;padding-top:16px;border-top:1px solid var(--border)}
+h3{font-size:1rem;margin:20px 0 6px}
+p,li{color:var(--text)}
+a{color:var(--accent)}
+.crumb{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums;margin:10px 0}
+.tw{overflow-x:auto}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-weight:600;color:var(--text2);font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
+code{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:.84em;background:var(--grid);padding:1px 5px;border-radius:4px}
+pre{background:var(--grid);padding:14px;border-radius:8px;overflow-x:auto;font-size:.8rem;line-height:1.5}
+pre code{background:none;padding:0}
+strong{font-weight:650}
+td code{overflow-wrap:anywhere;word-break:break-word}
+td{min-width:90px}
+figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radius:8px;border:1px solid var(--border)}figcaption{font-size:.85rem;color:var(--text2);margin-top:6px}
+/*menu*/
+.mn{position:sticky;top:0;z-index:50;margin:0;display:block;background:var(--surface,var(--surface-1));border-bottom:1px solid var(--border);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.mn-in{max-width:1100px;margin:0 auto;padding:6px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px}
+.mn a{text-decoration:none;border-bottom:0}
+.mn-marca{font-weight:650;color:var(--text,var(--text-primary));margin-right:10px;padding:6px 0;white-space:nowrap}
+.mn-item{display:inline-block;padding:6px 10px;border-radius:6px;color:var(--text2,var(--text-secondary));cursor:pointer;white-space:nowrap;list-style:none}
+.mn-item::-webkit-details-marker{display:none}
+summary.mn-item::after{content:" ▾";font-size:.8em}
+.mn-item:hover{background:var(--grid);color:var(--text,var(--text-primary))}
+.mn-item[aria-current]{background:var(--accent-soft);color:var(--text,var(--text-primary));font-weight:600}
+.mn-grupo{position:relative}
+.mn-lista{position:absolute;left:0;top:calc(100% + 4px);min-width:260px;max-width:min(440px,90vw);max-height:70vh;overflow:auto;background:var(--surface,var(--surface-1));border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;display:flex;flex-direction:column}
+.mn-lista a{padding:7px 10px;border-radius:5px;color:var(--text,var(--text-primary));font-size:.9rem}
+.mn-lista a:hover{background:var(--grid)}
+.mn-lista a[aria-current]{background:var(--accent-soft);font-weight:600}
+@media (max-width:640px){.mn-marca{width:100%}.mn-grupo{position:static}.mn-lista{left:16px;right:16px;max-width:none}}
+[id]{scroll-margin-top:60px}
+@media print{.mn{display:none}}
+/*/menu*/
+</style>
+</head>
+<body>
+<!--menu-->
+<nav class="mn" aria-label="Navegação do projeto"><div class="mn-in"><a class="mn-marca" href="../../resumo_experimentos.html">Leishmania · Doutorado</a><a class="mn-item" href="../../resumo_experimentos.html">Resumo</a><a class="mn-item" href="../../01_preprocessamento/README.html">Pré-processamento</a><details class="mn-grupo"><summary class="mn-item">Datasets</summary><div class="mn-lista"><a href="../../00_dataset_cvat/README.html">00_dataset_cvat (dados brutos do CVAT)</a><a href="../../02_datasets_derivados/README.html">Visão geral dos datasets derivados</a><a href="../../02_datasets_derivados/01_imagens_macrofagos_infectados/README.html">01_imagens_macrofagos_infectados</a><a href="../../02_datasets_derivados/02_recortes_512/README.html">02_recortes_512</a><a href="../../02_datasets_derivados/03_recortes_512_sem_macrofago/README.html">03_recortes_512_sem_macrofago</a><a href="../../02_datasets_derivados/04_recortes_512_sem_macrofago_reinhard/README.html">04_recortes_512_sem_macrofago_reinhard</a><a href="../../02_datasets_derivados/05_recortes_512_macrofago_cor_fundo/README.html">05_recortes_512_macrofago_cor_fundo</a><a href="../../03_experimentos%20anteriores/datasets_derivados/README.html">Variantes antigas (exp06, exp07)</a></div></details><details class="mn-grupo"><summary class="mn-item">Experimentos anteriores</summary><div class="mn-lista"><a href="../../03_experimentos%20anteriores/README.html">Índice exp01–exp09</a><a href="../../03_experimentos%20anteriores/exp01_yolo11n/README.html">exp01 · YOLO11n, recorte original</a><a href="../../03_experimentos%20anteriores/exp02_yolo11n_p2/README.html">exp02 · YOLO11n + cabeça P2, imgsz 640</a><a href="../../03_experimentos%20anteriores/exp03_yolo11l/README.html">exp03 · YOLO11l, recorte original</a><a href="../../03_experimentos%20anteriores/exp04_yolo26m/README.html">exp04 · YOLO26m</a><a href="../../03_experimentos%20anteriores/exp05_yolo26l/README.html">exp05 · YOLO26l</a><a href="../../03_experimentos%20anteriores/exp06_yolo11m_realce/README.html">exp06 · YOLO11m + realce CLAHE + aumento de dados</a><a href="../../03_experimentos%20anteriores/exp07_yolo11l_lab/README.html">exp07 · YOLO11l + Lab puro + batch 4</a><a href="../../03_experimentos%20anteriores/exp08_yolo11n_sem_macrofago/README.html">exp08 · YOLO11n, recorte sem macrófago</a><a href="../../03_experimentos%20anteriores/exp09_yolo11l_sem_macrofago/README.html">exp09 · YOLO11l, recorte sem macrófago</a></div></details><details class="mn-grupo"><summary class="mn-item" aria-current="page">Novos experimentos</summary><div class="mn-lista"><a href="../README.html">Índice, status e plano</a><a href="../exp10_yolov8l_sem_macrofago/README.html">exp10 · YOLOv8l sobre os recortes sem macrófago</a><a href="../exp11_yolo11n_reinhard/README.html">exp11 · YOLO11n sobre os recortes com coloração normalizada (Reinhard)</a><a href="../exp12_yolo11n_aumento_hed/README.html">exp12 · YOLO11n com aumento de cor HED no treino</a><a href="README.html" aria-current="page">exp13 · YOLO11n sobre os recortes com o macrófago preenchido pela cor do fundo</a><a href="../exp14_yolo11n_imgsz1024/README.html">exp14 · YOLO11n com imgsz 1024</a></div></details></div></nav>
+<script>document.addEventListener("click",function(e){document.querySelectorAll(".mn-grupo[open]").forEach(function(d){if(!d.contains(e.target))d.removeAttribute("open")})});document.querySelectorAll(".mn-grupo").forEach(function(d){d.addEventListener("toggle",function(){if(d.open)document.querySelectorAll(".mn-grupo[open]").forEach(function(o){if(o!==d)o.removeAttribute("open")})})});</script>
+<!--/menu-->
+<main>
+<div class="crumb"><a href="../../resumo_experimentos.html">Resumo dos experimentos</a> / <a href="../README.html">05_novos_experimentos</a> / exp13_yolo11n_mascara_cor_fundo</div>
+<article>
+<h1>exp13 — YOLO11n sobre os recortes com o macrófago preenchido pela cor do fundo</h1>
+<p><strong>Objetivo:</strong> repetir o exp08 (YOLO11n sobre os recortes com o macrófago mascarado; mAP50 0,485 ± 0,109) mudando um único fator: o <strong>dataset</strong>: a bbox do macrófago é preenchida com a cor mediana do fundo do recorte, e não com preto (anotações idênticas).</p>
+<p><strong>Hipótese:</strong> O retângulo preto cria bordas artificiais fortes e uma área grande sem informação. Preencher com a cor do fundo deixa a imagem mais parecida com uma área vazia da lâmina.</p>
+<p><strong>Por que partir do exp08:</strong> os exp08, exp09 e exp10 mostraram que o modelo não muda o resultado (0,485 a 0,493), e o YOLO11n treina cerca de 5× mais rápido que os modelos large.</p>
+<div class="tw"><table><tbody>
+<tr><td><strong>Notebook</strong></td><td><code>exp13_yolo11n_mascara_cor_fundo.ipynb</code></td></tr>
+<tr><td><strong>Dataset</strong></td><td><code>02_datasets_derivados/05_recortes_512_macrofago_cor_fundo/</code> (gerado por <code>01_preprocessamento/05_mascarar_macrofago_cor_fundo.ipynb</code>)</td></tr>
+<tr><td><strong>Modelo</strong></td><td><code>yolo11n.pt</code> (pré-treinado COCO, 2,6M parâmetros)</td></tr>
+<tr><td><strong>Hiperparâmetros</strong></td><td>imgsz 512, 150 épocas, patience 40, batch 16, AdamW, lr0 5e-4, lrf 0.01, cos_lr, single_cls, seed 42; aumento de dados hsv 0.03/0.9/0.6, degrees 15, flipud 0.5, mixup 0.1 (iguais ao exp08, exceto o fator testado)</td></tr>
+<tr><td><strong>Validação</strong></td><td>os mesmos 6 folds por lâmina dos experimentos anteriores, com métricas no teste agregadas por fold e por lâmina</td></tr>
+<tr><td><strong>Status</strong></td><td>concluído em 18 nov. 2026</td></tr>
+</tbody></table></div>
+<h2>Exemplos das imagens</h2>
+<figure><a href="figuras/mascara_preto_vs_fundo.jpg" target="_blank"><img src="figuras/mascara_preto_vs_fundo.jpg" alt="mascara_preto_vs_fundo.jpg"></a><figcaption>Linha de cima: máscara preta (exp08). Linha de baixo: preenchimento com a cor mediana do fundo.</figcaption></figure>
+<h2>Resultado</h2>
+<p>Conjunto de teste, média ± desvio padrão nos 6 folds, comparado com o exp08 (a base). Diferenças menores que 0,03 estão dentro do ruído.</p>
+<div class="tw"><table><thead><tr><th>Métrica</th><th>exp13</th><th>exp08 (base)</th><th>Δ</th></tr></thead><tbody><tr><td>Precisão</td><td><strong>0,506 ± 0,121</strong></td><td>0,508 ± 0,102</td><td>−0,002</td></tr><tr><td>Recall</td><td><strong>0,550 ± 0,099</strong></td><td>0,547 ± 0,074</td><td>+0,003</td></tr><tr><td>mAP50</td><td><strong>0,488 ± 0,130</strong></td><td>0,485 ± 0,109</td><td>+0,003</td></tr><tr><td>mAP50-95</td><td><strong>0,187 ± 0,047</strong></td><td>0,184 ± 0,039</td><td>+0,003</td></tr></tbody></table></div>
+<h3>Conclusão</h3>
+<ul><li>mAP50 0,488 ± 0,130, +0,002 em relação ao exp08: <strong>sem efeito</strong>. Foi melhor em 3 dos 6 folds.</li><li>Nenhuma lâmina mudou de forma consistente. A leish_1 caiu no fold 3 (0,423), e o desvio entre folds aumentou.</li><li>O fold 4 chegou ao limite de 150 épocas (melhor época: 143), então poderia ter treinado mais.</li><li>Conclusão: a cor usada para apagar o macrófago (preto ou cor do fundo) não importa. A máscara preta, mais simples, continua sendo a referência.</li></ul>
+<h3>Por fold</h3>
+<div class="tw"><table><thead><tr><th>Fold</th><th>Lâminas de teste</th><th>Épocas (melhor)</th><th>P</th><th>R</th><th>mAP50</th><th>mAP50-95</th><th>Δ mAP50 vs exp08</th></tr></thead><tbody><tr><td>1</td><td>leish_3, leish_5</td><td>74/42</td><td>0,549</td><td>0,566</td><td>0,528</td><td>0,176</td><td>−0,006</td></tr><tr><td>2</td><td>leish_2, leish_7</td><td>111/71</td><td>0,609</td><td>0,648</td><td>0,621</td><td>0,245</td><td>+0,047</td></tr><tr><td>3</td><td>leish_1, leish_8</td><td>129/89</td><td>0,390</td><td>0,382</td><td>0,314</td><td>0,130</td><td>−0,040</td></tr><tr><td>4</td><td>leish_4, leish_9</td><td>150/143</td><td>0,471</td><td>0,607</td><td>0,480</td><td>0,199</td><td>+0,004</td></tr><tr><td>5</td><td>leish_1, leish_7</td><td>58/18</td><td>0,660</td><td>0,612</td><td>0,622</td><td>0,229</td><td>+0,010</td></tr><tr><td>6</td><td>leish_2, leish_8</td><td>92/52</td><td>0,358</td><td>0,485</td><td>0,359</td><td>0,141</td><td>−0,001</td></tr></tbody></table></div>
+<h3>mAP50 por lâmina</h3>
+<div class="tw"><table><thead><tr><th>Lâmina</th><th>Folds</th><th>exp08</th><th>exp13</th><th>Δ</th></tr></thead><tbody><tr><td>leish_1</td><td>3, 5</td><td>0,525</td><td>0,490</td><td>−0,035</td></tr><tr><td>leish_2</td><td>2, 6</td><td>0,399</td><td>0,379</td><td>−0,020</td></tr><tr><td>leish_3</td><td>1</td><td>0,359</td><td>0,277</td><td>−0,082</td></tr><tr><td>leish_4</td><td>4</td><td>0,184</td><td>0,201</td><td>+0,017</td></tr><tr><td>leish_5</td><td>1</td><td>0,536</td><td>0,532</td><td>−0,004</td></tr><tr><td>leish_7</td><td>2, 5</td><td>0,672</td><td>0,681</td><td>+0,009</td></tr><tr><td>leish_8</td><td>3, 6</td><td>0,359</td><td>0,350</td><td>−0,009</td></tr><tr><td>leish_9</td><td>4</td><td>0,590</td><td>0,559</td><td>−0,031</td></tr></tbody></table></div>
+<h2>Histórico</h2>
+<ul>
+<li>18 nov. 2026: criado a partir do plano de melhorias baseado nos exp01–exp10, e lançado na fila <code>executar_fila.sh</code> (exp11 → exp12 → exp13 → exp14).</li>
+<li>18 nov. 2026: execução concluída nos 6 folds; resultados registrados.</li>
+</ul>
+</article>
+</main>
+</body>
+</html>

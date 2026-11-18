@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01_preprocessamento</title>
+<style>
+:root{color-scheme:light;--bg:#f6f6f4;--surface:#fcfcfb;--border:#e3e2dd;--grid:#ecebe7;--text:#0b0b0b;--text2:#52514e;--muted:#7a7974;--accent:#2a78d6;--accent-soft:#e8f1fc}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:32px 16px 64px}
+article{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+h1{font-size:1.6rem;margin:0 0 12px;letter-spacing:-.01em}
+h2{font-size:1.15rem;margin:28px 0 8px;padding-top:16px;border-top:1px solid var(--border)}
+h3{font-size:1rem;margin:20px 0 6px}
+p,li{color:var(--text)}
+a{color:var(--accent)}
+.crumb{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums;margin:10px 0}
+.tw{overflow-x:auto}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-weight:600;color:var(--text2);font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
+code{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:.84em;background:var(--grid);padding:1px 5px;border-radius:4px}
+pre{background:var(--grid);padding:14px;border-radius:8px;overflow-x:auto;font-size:.8rem;line-height:1.5}
+pre code{background:none;padding:0}
+strong{font-weight:650}
+td code{overflow-wrap:anywhere;word-break:break-word}
+td{min-width:90px}
+figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radius:8px;border:1px solid var(--border)}figcaption{font-size:.85rem;color:var(--text2);margin-top:6px}
+.legenda-cores i{display:inline-block;width:12px;height:12px;border:2px solid;vertical-align:-1px;margin:0 3px 0 8px}
+.fluxo{display:flex;flex-direction:column;align-items:center;margin:16px 0}
+.etapa{display:flex;gap:14px;align-items:center;width:100%;max-width:760px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px}
+.etapa img{width:260px;flex:none;border-radius:6px;border:1px solid var(--border);display:block}
+.etapa h4{margin:0 0 4px;font-size:.95rem}.etapa p{margin:2px 0;font-size:.86rem;color:var(--text2)}
+.etapa .uso{color:var(--text);font-weight:600}
+.seta{display:flex;flex-direction:column;align-items:center;padding:4px 0;font-size:.82rem;color:var(--muted);text-align:center}
+.seta b{font-size:1.4rem;line-height:1;color:var(--text2)}.seta a{font-family:ui-monospace,Menlo,monospace;font-size:.8rem}
+.ramos{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:760px}
+.ramo{display:flex;flex-direction:column;align-items:center}
+.ramo .etapa{flex-direction:column;align-items:stretch;text-align:left}.ramo .etapa img{width:100%;max-width:280px;margin:0 auto}
+.ramo-titulo{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+@media (max-width:640px){.etapa{flex-direction:column;align-items:stretch}.etapa img{width:100%}.ramos{grid-template-columns:1fr}}
+/*menu*/
+.mn{position:sticky;top:0;z-index:50;margin:0;display:block;background:var(--surface,var(--surface-1));border-bottom:1px solid var(--border);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.mn-in{max-width:1100px;margin:0 auto;padding:6px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px}
+.mn a{text-decoration:none;border-bottom:0}
+.mn-marca{font-weight:650;color:var(--text,var(--text-primary));margin-right:10px;padding:6px 0;white-space:nowrap}
+.mn-item{display:inline-block;padding:6px 10px;border-radius:6px;color:var(--text2,var(--text-secondary));cursor:pointer;white-space:nowrap;list-style:none}
+.mn-item::-webkit-details-marker{display:none}
+summary.mn-item::after{content:" ▾";font-size:.8em}
+.mn-item:hover{background:var(--grid);color:var(--text,var(--text-primary))}
+.mn-item[aria-current]{background:var(--accent-soft);color:var(--text,var(--text-primary));font-weight:600}
+.mn-grupo{position:relative}
+.mn-lista{position:absolute;left:0;top:calc(100% + 4px);min-width:260px;max-width:min(440px,90vw);max-height:70vh;overflow:auto;background:var(--surface,var(--surface-1));border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;display:flex;flex-direction:column}
+.mn-lista a{padding:7px 10px;border-radius:5px;color:var(--text,var(--text-primary));font-size:.9rem}
+.mn-lista a:hover{background:var(--grid)}
+.mn-lista a[aria-current]{background:var(--accent-soft);font-weight:600}
+@media (max-width:640px){.mn-marca{width:100%}.mn-grupo{position:static}.mn-lista{left:16px;right:16px;max-width:none}}
+[id]{scroll-margin-top:60px}
+@media print{.mn{display:none}}
+/*/menu*/
+</style>
+</head>
+<body>
+<!--menu-->
+<nav class="mn" aria-label="Navegação do projeto"><div class="mn-in"><a class="mn-marca" href="../resumo_experimentos.html">Leishmania · Doutorado</a><a class="mn-item" href="../resumo_experimentos.html">Resumo</a><a class="mn-item" href="README.html" aria-current="page">Pré-processamento</a><details class="mn-grupo"><summary class="mn-item">Datasets</summary><div class="mn-lista"><a href="../00_dataset_cvat/README.html">00_dataset_cvat (dados brutos do CVAT)</a><a href="../02_datasets_derivados/README.html">Visão geral dos datasets derivados</a><a href="../02_datasets_derivados/01_imagens_macrofagos_infectados/README.html">01_imagens_macrofagos_infectados</a><a href="../02_datasets_derivados/02_recortes_512/README.html">02_recortes_512</a><a href="../02_datasets_derivados/03_recortes_512_sem_macrofago/README.html">03_recortes_512_sem_macrofago</a><a href="../02_datasets_derivados/04_recortes_512_sem_macrofago_reinhard/README.html">04_recortes_512_sem_macrofago_reinhard</a><a href="../02_datasets_derivados/05_recortes_512_macrofago_cor_fundo/README.html">05_recortes_512_macrofago_cor_fundo</a><a href="../03_experimentos%20anteriores/datasets_derivados/README.html">Variantes antigas (exp06, exp07)</a></div></details><details class="mn-grupo"><summary class="mn-item">Experimentos anteriores</summary><div class="mn-lista"><a href="../03_experimentos%20anteriores/README.html">Índice exp01–exp09</a><a href="../03_experimentos%20anteriores/exp01_yolo11n/README.html">exp01 · YOLO11n, recorte original</a><a href="../03_experimentos%20anteriores/exp02_yolo11n_p2/README.html">exp02 · YOLO11n + cabeça P2, imgsz 640</a><a href="../03_experimentos%20anteriores/exp03_yolo11l/README.html">exp03 · YOLO11l, recorte original</a><a href="../03_experimentos%20anteriores/exp04_yolo26m/README.html">exp04 · YOLO26m</a><a href="../03_experimentos%20anteriores/exp05_yolo26l/README.html">exp05 · YOLO26l</a><a href="../03_experimentos%20anteriores/exp06_yolo11m_realce/README.html">exp06 · YOLO11m + realce CLAHE + aumento de dados</a><a href="../03_experimentos%20anteriores/exp07_yolo11l_lab/README.html">exp07 · YOLO11l + Lab puro + batch 4</a><a href="../03_experimentos%20anteriores/exp08_yolo11n_sem_macrofago/README.html">exp08 · YOLO11n, recorte sem macrófago</a><a href="../03_experimentos%20anteriores/exp09_yolo11l_sem_macrofago/README.html">exp09 · YOLO11l, recorte sem macrófago</a></div></details><details class="mn-grupo"><summary class="mn-item">Novos experimentos</summary><div class="mn-lista"><a href="../05_novos_experimentos/README.html">Índice, status e plano</a><a href="../05_novos_experimentos/exp10_yolov8l_sem_macrofago/README.html">exp10 · YOLOv8l sobre os recortes sem macrófago</a><a href="../05_novos_experimentos/exp11_yolo11n_reinhard/README.html">exp11 · YOLO11n sobre os recortes com coloração normalizada (Reinhard)</a><a href="../05_novos_experimentos/exp12_yolo11n_aumento_hed/README.html">exp12 · YOLO11n com aumento de cor HED no treino</a><a href="../05_novos_experimentos/exp13_yolo11n_mascara_cor_fundo/README.html">exp13 · YOLO11n sobre os recortes com o macrófago preenchido pela cor do fundo</a><a href="../05_novos_experimentos/exp14_yolo11n_imgsz1024/README.html">exp14 · YOLO11n com imgsz 1024</a></div></details></div></nav>
+<script>document.addEventListener("click",function(e){document.querySelectorAll(".mn-grupo[open]").forEach(function(d){if(!d.contains(e.target))d.removeAttribute("open")})});document.querySelectorAll(".mn-grupo").forEach(function(d){d.addEventListener("toggle",function(){if(d.open)document.querySelectorAll(".mn-grupo[open]").forEach(function(o){if(o!==d)o.removeAttribute("open")})})});</script>
+<!--/menu-->
+<main>
+<div class="crumb"><a href="../resumo_experimentos.html">Resumo dos experimentos</a> / 01_preprocessamento</div>
+<article>
+<h1>01_preprocessamento</h1>
+<p>Notebooks que transformam as anotações brutas do CVAT (<a href="../00_dataset_cvat/README.html"><code>00_dataset_cvat/</code></a>) nos datasets usados pelos experimentos (<code>02_datasets_derivados/</code>). Rode na ordem numérica. O número de cada notebook é o mesmo da pasta que ele gera em <code>02_datasets_derivados/</code>.</p>
+<h2>Fluxograma</h2>
+<p>A mesma imagem da <code>leish_4</code> acompanhada por todas as etapas. Cada seta é um notebook (clique para ver a explicação dele), e cada quadro é a pasta que ele gera. Clique numa imagem para ampliar. <span class="legenda-cores"><i style="border-color:#ffd400"></i>leishmania fora do macrófago (alvo)<i style="border-color:#ff8c00"></i>leishmania dentro do macrófago<i style="border-color:#ff0000"></i>macrófago</span></p>
+<div class="fluxo">
+<div class="etapa"><a href="figuras/fluxo_00_bruto.jpg" target="_blank"><img src="figuras/fluxo_00_bruto.jpg" alt="00_dataset_cvat/" loading="lazy"></a><div><h4>00 · <code>00_dataset_cvat/</code></h4><p>Dados brutos exportados do CVAT: 609 imagens 1920×1080 das 8 lâminas, com todas as classes anotadas.</p><p class="uso">Origem de tudo; não é alterado.</p></div></div>
+<div class="seta"><b>↓</b><a href="#nb01">01_filtrar_imagens_infectadas.ipynb</a><span>mantém só as imagens com algum macrófago infectado</span></div>
+<div class="etapa"><a href="figuras/fluxo_01_filtrada.jpg" target="_blank"><img src="figuras/fluxo_01_filtrada.jpg" alt="01_imagens_macrofagos_infectados/" loading="lazy"></a><div><h4>01 · <code>01_imagens_macrofagos_infectados/</code></h4><p>599 imagens inteiras. Em vermelho, os macrófagos; em laranja, as leishmanias dentro deles, que indicam a infecção.</p><p>O quadro magenta é o recorte que a próxima etapa gera a partir de um desses macrófagos.</p><p class="uso">Entrada da etapa 02.</p></div></div>
+<div class="seta"><b>↓</b><a href="#nb02">02_gerar_recortes_512.ipynb</a><span>um recorte 512×512 centrado em cada macrófago infectado</span></div>
+<div class="etapa"><a href="figuras/fluxo_02_recorte.jpg" target="_blank"><img src="figuras/fluxo_02_recorte.jpg" alt="02_recortes_512/" loading="lazy"></a><div><h4>02 · <code>02_recortes_512/</code></h4><p>1.568 recortes com todas as anotações. O macrófago está visível, com as leishmanias de dentro dele.</p><p class="uso">Usado nos exp01–exp05.</p></div></div>
+<div class="ramos">
+<div class="ramo"><div class="ramo-titulo">Ramo A · máscara preta</div>
+<div class="seta"><b>↓</b><a href="#nb03">03_mascarar_macrofago_nos_recortes.ipynb</a><span>pinta o macrófago de preto e remove as anotações dele</span></div>
+<div class="etapa"><a href="figuras/fluxo_03_mascarado.jpg" target="_blank"><img src="figuras/fluxo_03_mascarado.jpg" alt="03_recortes_512_sem_macrofago/" loading="lazy"></a><div><h4>03 · <code>03_recortes_512_sem_macrofago/</code></h4><p>Só o alvo (amarelo) continua anotado. 339 recortes ficam sem anotação e servem de negativos.</p><p class="uso">Usado nos exp08, 09, 10, 12 e 14.</p></div></div>
+<div class="seta"><b>↓</b><a href="#nb04">04_normalizar_coloracao_reinhard.ipynb</a><span>iguala a cor da lâmina à da leish_7</span></div>
+<div class="etapa"><a href="figuras/fluxo_04_reinhard.jpg" target="_blank"><img src="figuras/fluxo_04_reinhard.jpg" alt="04_recortes_512_sem_macrofago_reinhard/" loading="lazy"></a><div><h4>04 · <code>04_recortes_512_sem_macrofago_reinhard/</code></h4><p>Mesmo recorte, com a cor normalizada. A leish_4, acinzentada, fica roxa como a leish_7.</p><p class="uso">Usado no exp11.</p></div></div>
+</div>
+<div class="ramo"><div class="ramo-titulo">Ramo B · máscara com a cor do fundo</div>
+<div class="seta"><b>↓</b><a href="#nb05">05_mascarar_macrofago_cor_fundo.ipynb</a><span>pinta o macrófago com a cor mediana do fundo</span></div>
+<div class="etapa"><a href="figuras/fluxo_05_cor_fundo.jpg" target="_blank"><img src="figuras/fluxo_05_cor_fundo.jpg" alt="05_recortes_512_macrofago_cor_fundo/" loading="lazy"></a><div><h4>05 · <code>05_recortes_512_macrofago_cor_fundo/</code></h4><p>Anotações idênticas às da etapa 03; muda só a cor da área apagada.</p><p class="uso">Usado no exp13.</p></div></div>
+</div>
+</div>
+</div>
+<h2>Visão geral</h2>
+<p>Rode os notebooks na ordem numérica. Cada um lê a saída de uma etapa anterior e grava em <code>02_datasets_derivados/</code>, na pasta de mesmo número.</p>
+<div class="tw"><table>
+<thead><tr><th>Notebook</th><th>Entrada → saída (em <code>02_datasets_derivados/</code>)</th><th>Resultado</th><th>Usado em</th></tr></thead>
+<tbody>
+<tr><td><a href="#nb01"><code>01_filtrar_imagens_infectadas.ipynb</code></a></td><td><code>00_dataset_cvat/</code> → <code>01_imagens_macrofagos_infectados/</code></td><td>599 de 609 imagens (1920×1080)</td><td>entrada da etapa 02</td></tr>
+<tr><td><a href="#nb02"><code>02_gerar_recortes_512.ipynb</code></a></td><td><code>01_imagens_macrofagos_infectados/</code> → <code>02_recortes_512/</code></td><td>1.568 recortes · 10.688 instâncias de <code>leishmania</code></td><td>exp01–exp05; entrada das etapas 03 e 05</td></tr>
+<tr><td><a href="#nb03"><code>03_mascarar_macrofago_nos_recortes.ipynb</code></a></td><td><code>02_recortes_512/</code> → <code>03_recortes_512_sem_macrofago/</code></td><td>1.568 recortes · 339 sem anotação (servem de negativos)</td><td>exp08, exp09, exp10, exp12, exp14; entrada da etapa 04</td></tr>
+<tr><td><a href="#nb04"><code>04_normalizar_coloracao_reinhard.ipynb</code></a></td><td><code>03_recortes_512_sem_macrofago/</code> → <code>04_recortes_512_sem_macrofago_reinhard/</code></td><td>1.568 recortes · o canal verde médio entre lâminas passou de 77–124 para 77–83</td><td>exp11</td></tr>
+<tr><td><a href="#nb05"><code>05_mascarar_macrofago_cor_fundo.ipynb</code></a></td><td><code>02_recortes_512/</code> → <code>05_recortes_512_macrofago_cor_fundo/</code></td><td>1.568 recortes · anotações idênticas às da etapa 03 (conferidas arquivo a arquivo)</td><td>exp13</td></tr>
+</tbody></table></div>
+<h2>O que cada arquivo faz</h2>
+<h3 id="nb01">01 · Filtrar as imagens com macrófago infectado</h3>
+<p><code>01_filtrar_imagens_infectadas.ipynb</code></p>
+<p>Extrai os zips exportados do CVAT (YOLO 1.1) e mantém só as imagens que têm ao menos uma anotação <code>inside-macrophage</code>, ou seja, algum macrófago infectado. Copia a imagem, o <code>.txt</code> original e o <code>obj.names</code>.</p>
+<ul>
+<li><strong>Entrada:</strong> <code>00_dataset_cvat/</code></li>
+<li><strong>Saída:</strong> <code>01_imagens_macrofagos_infectados/</code></li>
+<li><strong>Resultado:</strong> 599 de 609 imagens (1920×1080)</li>
+<li><strong>Usado em:</strong> entrada da etapa 02</li>
+</ul>
+<h3 id="nb02">02 · Gerar os recortes 512×512</h3>
+<p><code>02_gerar_recortes_512.ipynb</code></p>
+<p>Para cada macrófago infectado (bbox <code>macrophage</code> que contém o centro de um <code>inside-macrophage</code>), gera um recorte 512×512 centrado nele. Se o recorte sairia da imagem, a janela é deslocada para dentro, sem esticar. As anotações de todas as classes são recalculadas para o recorte e cortadas na borda. No fim, mostra uma grade de 100 recortes para conferência visual.</p>
+<ul>
+<li><strong>Entrada:</strong> <code>01_imagens_macrofagos_infectados/</code></li>
+<li><strong>Saída:</strong> <code>02_recortes_512/</code></li>
+<li><strong>Resultado:</strong> 1.568 recortes · 10.688 instâncias de <code>leishmania</code></li>
+<li><strong>Usado em:</strong> exp01–exp05; entrada das etapas 03 e 05</li>
+</ul>
+<h3 id="nb03">03 · Mascarar o macrófago (preto)</h3>
+<p><code>03_mascarar_macrofago_nos_recortes.ipynb</code></p>
+<p>Pinta de preto a bbox de cada <code>macrophage</code> no recorte e remove as anotações <code>macrophage</code> e <code>inside-macrophage</code>. Mantém <code>leishmania</code> e <code>Non-macrophages</code>, mesmo quando se sobrepõem à área apagada. É a variação que deu o maior ganho da série (exp08 e exp09).</p>
+<ul>
+<li><strong>Entrada:</strong> <code>02_recortes_512/</code></li>
+<li><strong>Saída:</strong> <code>03_recortes_512_sem_macrofago/</code></li>
+<li><strong>Resultado:</strong> 1.568 recortes · 339 sem anotação (servem de negativos)</li>
+<li><strong>Usado em:</strong> exp08, exp09, exp10, exp12, exp14; entrada da etapa 04</li>
+</ul>
+<h3 id="nb04">04 · Normalizar a cor entre lâminas (Reinhard)</h3>
+<p><code>04_normalizar_coloracao_reinhard.ipynb</code></p>
+<p>Normaliza a cor de cada lâmina para a da <code>leish_7</code> pelo método de Reinhard: no espaço Lab, ajusta média e desvio de L, a e b, calculados para a lâmina inteira e ignorando a região preta. Mantém o preto e copia os <code>.txt</code> sem alteração. O Macenko foi testado antes e descartado, porque o modelo de dois corantes não se ajustou à coloração Giemsa. A justificativa da referência está no <a href="../05_novos_experimentos/exp11_yolo11n_reinhard/README.html">README do exp11</a>.</p>
+<ul>
+<li><strong>Entrada:</strong> <code>03_recortes_512_sem_macrofago/</code></li>
+<li><strong>Saída:</strong> <code>04_recortes_512_sem_macrofago_reinhard/</code></li>
+<li><strong>Resultado:</strong> 1.568 recortes · o canal verde médio entre lâminas passou de 77–124 para 77–83</li>
+<li><strong>Usado em:</strong> exp11</li>
+</ul>
+<h3 id="nb05">05 · Mascarar o macrófago (cor do fundo)</h3>
+<p><code>05_mascarar_macrofago_cor_fundo.ipynb</code></p>
+<p>Igual à etapa 03, mas preenche a bbox de cada <code>macrophage</code> com a cor mediana dos pixels fora dos macrófagos do recorte, e não com preto. Assim, a área apagada não tem as bordas artificiais fortes do retângulo preto.</p>
+<ul>
+<li><strong>Entrada:</strong> <code>02_recortes_512/</code></li>
+<li><strong>Saída:</strong> <code>05_recortes_512_macrofago_cor_fundo/</code></li>
+<li><strong>Resultado:</strong> 1.568 recortes · anotações idênticas às da etapa 03 (conferidas arquivo a arquivo)</li>
+<li><strong>Usado em:</strong> exp13</li>
+</ul>
+<h3>Outros arquivos</h3>
+<div class="tw"><table><thead><tr><th>Arquivo</th><th>O que é</th></tr></thead><tbody>
+<tr><td><a href="divisao_folds_por_lamina.jpeg"><code>divisao_folds_por_lamina.jpeg</code></a></td><td>Esquema da validação cruzada: 6 folds por lâmina, com 5 lâminas de treino, 1 de validação e 2 de teste. É a mesma divisão em todos os experimentos.</td></tr>
+<tr><td><code>README.html</code></td><td>Esta página.</td></tr>
+</tbody></table></div>
+<h2>Como funcionam</h2>
+<ul>
+<li><strong>Idempotentes:</strong> cada etapa verifica se a pasta de saída já tem conteúdo e, se tiver, pula a geração. Para gerar de novo, apague (ou renomeie) a pasta de saída.</li>
+<li><strong>Caminhos:</strong> a raiz do projeto fica definida na célula de parâmetros (<code>diretorio_raiz = Path("/mnt/arquivos/Doutorado")</code>). Entrada e saída são derivadas dela.</li>
+<li><strong>Formato:</strong> em todas as saídas, cada lâmina tem sua subpasta <code>leish_N/</code>, com pares <code>.png</code> + <code>.txt</code> YOLO (<code>classe xc yc w h</code>, normalizados). O <code>obj.names</code> fica na raiz de cada dataset.</li>
+<li><strong>Classes (<code>obj.names</code>):</strong> <code>0 Non-macrophages</code> · <code>1 macrophage</code> · <code>2 leishmania</code> (alvo: fora do macrófago) · <code>3 inside-macrophage</code>.</li>
+</ul>
+<h2>O que não está aqui</h2>
+<ul>
+<li><strong>Aumento de cor HED</strong> (exp12): é feito durante o treino, dentro do notebook do experimento, e não gera dataset.</li>
+<li><strong>Variantes de cor antigas</strong> (<code>exp06_recortes_512_realce_clahe</code>, <code>exp07_recortes_512_lab</code>): foram geradas dentro dos notebooks dos experimentos exp06 e exp07 (<code>03_experimentos anteriores/</code>), e não aqui.</li>
+<li><strong>Estrutura YOLO dos folds</strong> (<code>images/</code> + <code>labels/</code> com classe única): é montada dentro de cada notebook de experimento, a partir de um destes datasets.</li>
+</ul>
+<h2>Histórico</h2>
+<ul>
+<li>Reorganizado em 17 nov. 2026. Os notebooks foram renomeados e os caminhos atualizados. O notebook 02 deixou de repetir as etapas do 01 (antes refazia a filtragem inteira) e passou a ler a saída do 01.</li>
+<li>Na reorganização, as etapas 02 e 03 foram executadas de novo numa pasta temporária, e o resultado foi <strong>byte a byte idêntico</strong> aos datasets existentes. Os notebooks 01 a 03 rodam com os caminhos atuais.</li>
+<li>18 nov. 2026: a explicação de cada arquivo, antes no resumo dos experimentos, passou a ficar só aqui.</li>
+<li>18 nov. 2026: criadas as etapas 04 (normalização de cor) e 05 (máscara com a cor do fundo), para os exp11 e exp13.</li>
+<li>As versões originais estão em <code>03_experimentos anteriores/legado/preprocessamento_original/</code>.</li>
+</ul>
+</article>
+</main>
+</body>
+</html>
