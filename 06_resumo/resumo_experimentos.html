@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experimentos Leishmania</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f6f6f4;
+  --surface-1: #fcfcfb;
+  --border: #e3e2dd;
+  --grid: #ecebe7;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #7a7974;
+  --series-1: #2a78d6;      /* macrófago mascarado */
+  --context: #b9b8b2;       /* macrófago visível */
+  --whisker: #52514e;
+  --accent-soft: #e8f1fc;
+  --best: #c92a2a;          /* melhor experimento */
+  --best-soft: #fdeaea;
+  --warn-bg: #fff6e0;
+  --warn-border: #eda100;
+  --seq-0: #cde2fb; --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5;
+  --seq-4: #256abf; --seq-5: #184f95; --seq-6: #0d366b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --bg: #121211; --surface-1: #1a1a19; --border: #2f2f2c; --grid: #262624;
+    --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #8f8e86;
+    --series-1: #3987e5; --context: #5a5955; --whisker: #c3c2b7;
+    --accent-soft: #1b2a3d; --warn-bg: #2e2612; --warn-border: #c98500;
+    --best: #f06b6b; --best-soft: #3a1d1d;
+    --seq-0: #1c2633; --seq-1: #104281; --seq-2: #184f95; --seq-3: #1c5cab;
+    --seq-4: #2a78d6; --seq-5: #5598e7; --seq-6: #9ec5f4;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121211; --surface-1: #1a1a19; --border: #2f2f2c; --grid: #262624;
+  --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #8f8e86;
+  --series-1: #3987e5; --context: #5a5955; --whisker: #c3c2b7;
+  --accent-soft: #1b2a3d; --warn-bg: #2e2612; --warn-border: #c98500;
+    --best: #f06b6b; --best-soft: #3a1d1d;
+  --seq-0: #1c2633; --seq-1: #104281; --seq-2: #184f95; --seq-3: #1c5cab;
+  --seq-4: #2a78d6; --seq-5: #5598e7; --seq-6: #9ec5f4;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text-primary);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+header h1 { font-size: 1.7rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+header p { margin: 0; color: var(--text-secondary); }
+h2 { font-size: 1.15rem; margin: 0 0 4px; }
+.sub { color: var(--text-secondary); margin: 0 0 16px; font-size: .92rem; }
+section.card {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px; margin-top: 20px;
+}
+header nav { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 14px; font-size: .9rem; }
+header nav a { color: var(--text-secondary); text-decoration: none; border-bottom: 1px dotted var(--text-muted); }
+header nav a:hover { color: var(--text-primary); }
+
+/* KPI tiles */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 20px; }
+.kpi { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.kpi .label { font-size: .8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .04em; }
+.kpi .value { font-size: 1.9rem; font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1.2; margin-top: 2px; }
+.kpi .note { font-size: .82rem; color: var(--text-muted); }
+
+/* Bar chart */
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: .85rem; color: var(--text-secondary); margin-bottom: 12px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.bars { position: relative; }
+.bar-row { display: grid; grid-template-columns: 250px 1fr 92px; align-items: center; gap: 10px; height: 34px; }
+.bar-label { font-size: .86rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-label b { color: var(--text-primary); font-weight: 600; }
+.track { position: relative; height: 100%; }
+.track .gl { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--grid); }
+.bar { position: absolute; top: 9px; height: 16px; left: 0; border-radius: 0 4px 4px 0; }
+.whisker { position: absolute; top: 16px; height: 2px; background: var(--whisker); }
+.whisker::before, .whisker::after { content: ""; position: absolute; top: -4px; width: 2px; height: 10px; background: var(--whisker); }
+.whisker::before { left: 0; } .whisker::after { right: 0; }
+.bar-val { font-size: .86rem; font-variant-numeric: tabular-nums; color: var(--text-primary); text-align: right; }
+.bar-val small { color: var(--text-muted); }
+.hit { position: absolute; inset: 0; cursor: default; }
+.axis { display: grid; grid-template-columns: 250px 1fr 92px; gap: 10px; margin-top: 4px; }
+.axis .ticks { position: relative; height: 18px; font-size: .75rem; color: var(--text-muted); }
+.axis .ticks span { position: absolute; transform: translateX(-50%); font-variant-numeric: tabular-nums; }
+.metric-switch { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.metric-switch button {
+  font: inherit; font-size: .85rem; padding: 5px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--border); background: transparent; color: var(--text-secondary);
+}
+.metric-switch button[aria-pressed="true"] { background: var(--accent-soft); color: var(--text-primary); border-color: var(--series-1); }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .88rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-weight: 600; color: var(--text-secondary); font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+tr.best td { background: var(--best-soft); }
+tr.best td:first-child { box-shadow: inset 4px 0 0 var(--best); color: var(--best); font-weight: 700; }
+tr.best td:nth-child(2) { color: var(--best); font-weight: 650; }
+tr.best td:nth-child(2) a, tr.best td:nth-child(2) code { color: var(--best); }
+.bar-row.best { background: var(--best-soft); border-radius: 6px; }
+.bar-row.best .bar-label, .bar-row.best .bar-label b, .bar-row.best .bar-val { color: var(--best); font-weight: 700; }
+.heat .h.best { color: var(--best); font-weight: 800; }
+.heat .c.best { box-shadow: inset 0 0 0 2px var(--best); }
+.kpi.best { border-color: var(--best); box-shadow: inset 0 3px 0 var(--best); }
+.kpi.best .value { color: var(--best); }
+.best-tag { color: var(--best); font-weight: 700; }
+.melhor-aviso { margin-top: 10px; font-size: .9rem; }
+.melhor-aviso i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--best); vertical-align: -1px; margin-right: 6px; }
+td .pm { color: var(--text-muted); font-size: .8rem; }
+code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: .84em; background: var(--grid); padding: 1px 5px; border-radius: 4px; }
+
+/* Heatmap */
+.heat { display: grid; grid-template-columns: 90px repeat(17, minmax(40px, 1fr)); gap: 2px; min-width: 920px; }
+.heat .h { font-size: .76rem; color: var(--text-secondary); text-align: center; padding: 4px 0; }
+.heat .rl { font-size: .84rem; color: var(--text-secondary); display: flex; align-items: center; }
+.heat .c {
+  height: 38px; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+  font-size: .78rem; font-variant-numeric: tabular-nums;
+}
+.heat .h.mask { color: var(--text-primary); font-weight: 600; }
+.scale { display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--text-muted); margin-top: 12px; }
+.scale .ramp { display: flex; gap: 2px; }
+.scale .ramp i { width: 26px; height: 10px; border-radius: 2px; display: block; }
+
+/* Text blocks */
+ol.concl { padding-left: 20px; margin: 0; }
+ol.concl li { margin-bottom: 10px; }
+h3.concl-h { font-size: 1rem; margin: 22px 0 4px; }
+#conclusoes ul li { margin-bottom: 6px; }
+#conclusoes ul ul { margin-top: 6px; }
+.warn { background: var(--warn-bg); border-left: 4px solid var(--warn-border); border-radius: 6px; padding: 12px 14px; margin-top: 12px; }
+.warn strong { display: block; margin-bottom: 4px; }
+ul { margin: 6px 0 0; padding-left: 20px; }
+pre.tree { font: .8rem/1.5 ui-monospace, Menlo, monospace; background: var(--grid); padding: 14px; border-radius: 8px; overflow-x: auto; margin: 0; }
+.pipeline { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: .85rem; margin: 10px 0 4px; }
+.pipeline span { border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; color: var(--text-secondary); }
+.pipeline span.me { border-color: var(--series-1); color: var(--text-primary); background: var(--accent-soft); font-weight: 600; }
+.pipeline em { color: var(--text-muted); font-style: normal; }
+
+/* Tooltip */
+#tip {
+  position: fixed; pointer-events: none; z-index: 10; opacity: 0; transition: opacity .1s;
+  background: var(--surface-1); color: var(--text-primary); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; font-size: .82rem; box-shadow: 0 4px 16px rgba(0,0,0,.14);
+  max-width: 260px; font-variant-numeric: tabular-nums;
+}
+#tip .t { font-weight: 600; margin-bottom: 2px; }
+#tip .m { color: var(--text-secondary); }
+
+footer { color: var(--text-muted); font-size: .8rem; margin-top: 28px; text-align: center; }
+
+@media (max-width: 640px) {
+  .bar-row, .axis { grid-template-columns: 112px 1fr 64px; gap: 6px; }
+  .bar-label { font-size: .78rem; }
+  .bar-val small { display: none; }
+  .axis .ticks span:nth-child(even) { display: none; }
+  header h1 { font-size: 1.35rem; }
+  section.card { padding: 16px; }
+}
+</style>
+</head>
+<body>
+<!--menu--><script src="menu.js"></script><!--/menu-->
+<main>
+  <header>
+    <h1>Detecção de amastigotas fora do macrófago</h1>
+    <p>Resumo dos 9 experimentos anteriores (jun.–ago. 2026) e dos novos experimentos (exp10 em diante, nov. 2026). São 6 folds por lâmina e as métricas são do conjunto de teste.</p>
+    <p class="sub" style="margin-top:6px"><strong>Experimentos novos (exp10 em diante):</strong> status, plano e detalhes ficam no índice <a href="../05_novos_experimentos/README.html"><code>05_novos_experimentos/</code></a>. Cada experimento tem um <code>README.html</code> com objetivo, imagens de entrada e resultado; o link está na coluna "Pasta" das <a href="#configs">configurações</a>. Este resumo traz só os números e as conclusões.</p>
+    <nav>
+      <a href="#resultado">Resultado por experimento</a>
+      <a href="#tabela">Tabela completa</a>
+      <a href="#laminas">Por lâmina</a>
+      <a href="#configs">Configurações</a>
+      <a href="#conclusoes">Conclusões</a>
+      <a href="#pendencias">Pendências</a>
+      <a href="#protocolo">Protocolo</a>
+      <a href="#pastas">Organização</a>
+    </nav>
+    <p class="melhor-aviso" id="melhor-aviso"></p>
+  </header>
+
+  <div class="kpis">
+    <div class="kpi best"><div class="label">Melhor mAP50</div><div class="value">0.510</div><div class="note">exp15 · YOLO11l + Optuna (exp08–17 mascarados entre 0.485 e 0.510)</div></div>
+    <div class="kpi"><div class="label">Melhor custo-benefício</div><div class="value">0.509</div><div class="note">exp16 · YOLO11n + hiperparâmetros do exp15 (20 min de treino)</div></div>
+    <div class="kpi"><div class="label">Melhor mAP50-95</div><div class="value">0.199</div><div class="note">exp14 (YOLO11n imgsz 1024) e exp15 (YOLO11l + Optuna)</div></div>
+    <div class="kpi"><div class="label">Patamar com macrófago visível</div><div class="value">0.39–0.44</div><div class="note">exp01–07, qualquer modelo</div></div>
+    <div class="kpi"><div class="label">Base de dados</div><div class="value">8 lâminas</div><div class="note">1.568 recortes 512×512</div></div>
+  </div>
+
+  <section class="card" id="resultado">
+    <h2>Resultado por experimento</h2>
+    <p class="sub">Média entre os 6 folds. A barra horizontal fina mostra ± 1 desvio padrão.</p>
+    <div class="metric-switch" role="group" aria-label="Métrica">
+      <button data-m="map50" aria-pressed="true">mAP50</button>
+      <button data-m="map5095" aria-pressed="false">mAP50-95</button>
+      <button data-m="p" aria-pressed="false">Precisão</button>
+      <button data-m="r" aria-pressed="false">Recall</button>
+    </div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--context)"></i>Recorte com macrófago visível</span>
+      <span><i class="sw" style="background:var(--series-1)"></i>Região do macrófago mascarada</span>
+      <span><i class="sw" style="background:var(--best)"></i>Melhor experimento (maior mAP50)</span>
+    </div>
+    <div class="bars" id="bars"></div>
+    <div class="axis"><div></div><div class="ticks" id="ticks"></div><div></div></div>
+  </section>
+
+  <section class="card" id="tabela">
+    <h2>Tabela completa</h2>
+    <p class="sub">Média ± desvio padrão entre os folds. A linha em vermelho é o melhor experimento (maior mAP50); em negrito, o maior valor de cada coluna.</p>
+    <div class="table-wrap"><table id="tbl"></table></div>
+  </section>
+
+  <section class="card" id="laminas">
+    <h2>mAP50 por lâmina</h2>
+    <p class="sub">Média entre os folds em que a lâmina caiu no teste. As lâminas leish_3, 4, 5 e 9 aparecem em um único fold. Quanto mais escura a célula, maior o mAP50. Os experimentos em negrito usaram a região do macrófago mascarada. A coluna com contorno vermelho é a do melhor experimento.</p>
+    <div class="table-wrap"><div class="heat" id="heat"></div></div>
+    <div class="scale"><span>0.10</span><div class="ramp" id="ramp"></div><span>0.71</span></div>
+  </section>
+
+  <section class="card" id="configs">
+    <h2>Configurações testadas</h2>
+    <p class="sub">A numeração segue a ordem cronológica. As pastas de exp01–09 ficam em <code>03_experimentos anteriores/</code>; a partir do exp10, em <code>05_novos_experimentos/</code>. O YOLO11-large com recorte original não tinha número nos notebooks e aqui virou o exp03. Por isso, do YOLO26m em diante, o "Exp. N" escrito no notebook é o exp(N+1) desta página. A linha em vermelho é o melhor experimento.</p>
+    <div class="table-wrap"><table id="cfg"></table></div>
+  </section>
+
+  <section class="card" id="conclusoes">
+    <h2>Conclusões</h2>
+    <ol class="concl">
+      <li><strong>Mascarar a região do macrófago foi a única mudança que ajudou de forma clara.</strong> O mAP50 subiu de 0.39–0.44 (exp01–07) para 0.485–0.510 (exp08–17), e as quatro métricas melhoraram ao mesmo tempo. A explicação provável é que a máscara elimina a confusão entre amastigota intra e extracelular.</li>
+      <li><strong>Tamanho e arquitetura do modelo não importaram.</strong> Do nano (2,6M) ao large (26M), com YOLO11, YOLO26 ou cabeça P2, todos ficaram no mesmo patamar. O exp09 (large) superou o exp08 (nano) por apenas +0.008 de mAP50, com desvio maior. O exp10 confirmou isso com outra geração: o YOLOv8l (43,6M) deu 0.489, entre os dois. O <strong>YOLO11n</strong> treina cerca de 5× mais rápido e é o melhor custo-benefício.</li>
+      <li><strong>Espaço de cor, CLAHE, P2, imgsz 640, lr menor e batch menor não trouxeram ganho na média.</strong> A diferença ficou dentro do desvio entre folds. O aumento de dados mais forte (exp06) deu o melhor recall entre as configurações com o macrófago visível.</li>
+      <li><strong>Pré-processamento sobre o recorte mascarado também não mudou a média (exp11–14).</strong> Normalizar a cor (Reinhard), aumento de cor HED, pintar o macrófago com a cor do fundo e imgsz 1024 ficaram entre +0.002 e +0.011 do exp08, dentro do ruído. Sinais por lâmina: o Reinhard (exp11) deu o melhor valor da série na <code>leish_4</code> (0.226), e o imgsz 1024 (exp14) deu o melhor mAP50-95 (0.199).</li>
+      <li><strong>Otimizar os hiperparâmetros com o Optuna (exp15) deu a maior média da série, mas ainda no ruído.</strong> Com o YOLO11l e busca aninhada por fold, o mAP50 foi 0.510 ± 0.115, +0.017 sobre o exp09, com 4 de 6 folds melhores e desvio menor. A busca indicou padrões consistentes: lr0 menor (~1e-4), weight_decay menor, menos jitter de saturação (hsv_s ~0.2–0.4) e mais rotação (~30°).</li>
+      <li><strong>Os hiperparâmetros do Optuna servem para o YOLO11n (exp16).</strong> Aplicados sem nova busca, deram 0.509 ± 0.109 em 20 minutos, o mesmo patamar do exp15 (2,5 h) e +0.024 sobre o exp08, o maior ganho sobre essa base na série (4 de 6 folds e 6 de 8 lâminas melhores). O ganho vem dos hiperparâmetros, não do tamanho do modelo.</li>
+      <li><strong>Buscar os hiperparâmetros no próprio YOLO11n (exp17) não ajudou.</strong> Com uma busca maior (16 × 20 por fold), deu 0.495 ± 0.144, abaixo do exp16. A busca melhorou a lâmina de validação em todos os folds, mas não o teste (pior caso: fold 6, 0.289 contra 0.403), e as escolhas não repetiram os padrões do exp15. Com uma única lâmina de validação por fold, a busca tem pouco sinal e se ajusta a ela; o +0.024 do exp16 sobre o exp08 pode ser em parte sorte.</li>
+      <li><strong>O detector perde as leishmanias pequenas e apagadas</strong> (<a href="../05_novos_experimentos/diagnostico_erros_exp15/README.html">diagnóstico de erros</a>, feito com o exp15, o modelo de melhor resultado). O modelo encontra 23% das leishmanias menores que 14 px (lado da caixa anotada no recorte de 512 px) e 50% das de 14 a 17 px, contra 70–74% das de 20 a 29 px; acima de 29 px o recall volta a cair, porque essas caixas foram anotadas com folga (75% na leish_5) e a caixa justa do modelo não atinge IoU 0,5; 24% das leishmanias têm menos de 17 px. Pelo contraste com o fundo, encontra 77% das 20% mais nítidas e só 41% das 20% mais apagadas. A máscara preta não gera erros. A leish_1 perde leishmanias (recall 0.28), e a leish_8, a leish_4 e a leish_2 detectam a mais (1.7, 1.4 e 1.2 falsos positivos por anotada). Os alvos sugeridos pelo diagnóstico são o tamanho (ampliar os recortes) e a revisão das anotações.</li>
+      <li><strong>O limitante principal são os dados.</strong> O desvio entre folds (cerca de 0.10–0.15) é maior que qualquer ganho obtido. As lâminas <code>leish_3</code> (10 instâncias) e <code>leish_4</code> (mAP50 ≤ 0.23 em todos os experimentos) são sempre as piores, e a <code>leish_7</code> é sempre a melhor.</li>
+      <li><strong>Melhor configuração até aqui (exp16):</strong> recorte sem macrófago + YOLO11n, imgsz 512, AdamW, cos_lr, 150 épocas, patience 40, flipud 0.5, com os hiperparâmetros escolhidos pelo Optuna no exp15 para cada fold (lr0 ~1e-4, weight_decay ~1e-5–1.5e-4, hsv_s ~0.2–0.4, degrees ~30 na maioria). Treina em ~20 minutos. A configuração anterior (exp08: lr0 5e-4, hsv 0.03/0.9/0.6, degrees 15, mixup 0.1) ficou 0.024 abaixo.</li>
+    </ol>
+
+    <h3 class="concl-h">O que os experimentos mostraram</h3>
+    <ul>
+      <li>Foram feitos 9 experimentos, todos com os mesmos 6 folds por lâmina, então dá para comparar um com o outro.</li>
+      <li><strong>A única mudança que melhorou de verdade foi pintar de preto a região do macrófago no recorte.</strong> O mAP50 passou de algo entre 0,39 e 0,44 (exp01–07) para 0,485 (YOLO11n) e 0,493 (YOLO11l), e as quatro métricas subiram juntas.</li>
+      <li>Trocar o tamanho do modelo (nano até large, YOLO11 ou YOLO26), usar a cabeça P2, CLAHE, espaço Lab, imgsz 640 ou batch menor não deu ganho que passe do desvio entre folds.</li>
+      <li>A maior limitação são os dados. <code>leish_3</code> tem só 10 instâncias e <code>leish_4</code> tem 132; as duas são sempre as piores.</li>
+      <li>O exp10 (YOLOv8l, 18 nov. 2026) repetiu o exp09 trocando só o modelo e deu mAP50 0,489 ± 0,107, no mesmo patamar e com desvio menor. Todos os folds terminaram normalmente, então é a medida mais confiável do patamar com o macrófago mascarado.</li>
+      <li>A melhor relação custo-benefício é recorte sem macrófago + YOLO11n.</li>
+      <li>Ressalvas e pendências das reuniões:
+        <ul>
+          <li>O fold 1 do melhor experimento (exp09) parou no meio do treino. O exp10, sem esse problema, chegou ao mesmo patamar.</li>
+          <li>Ainda faltam a avaliação binária por lâmina, o teste nas imagens inteiras e a detecção no raio dos macrófagos infectados.</li>
+        </ul>
+      </li>
+    </ul>
+
+  </section>
+
+  <section class="card" id="pendencias">
+    <h2>Ressalvas e pendências</h2>
+    <div class="warn">
+      <strong>O exp09 é o resultado menos confiável</strong>
+      No fold 1, o treino foi interrompido na época 100 de 150, sem early stopping, e o <code>best.pt</code> vem dessa execução incompleta. No fold 6, o melhor resultado ocorreu na época 5. O exp10 (YOLOv8l, mesmo dataset e hiperparâmetros) terminou os 6 folds normalmente e chegou a 0,489 ± 0,107, o que indica que o patamar de cerca de 0,49 é real.
+    </div>
+    <div class="warn">
+      <strong>Cabeçalho errado no notebook do exp03</strong>
+      O cabeçalho de <code>deteccao_yolov11large.ipynb</code> é uma cópia do exp01 e cita YOLO11n e mAP 0.439. Os números válidos desse experimento são os desta página.
+    </div>
+    <p style="margin:14px 0 0"><strong>Ainda não foram feitos</strong> (conforme as anotações das reuniões):</p>
+    <ul>
+      <li>a avaliação <strong>binária por lâmina/recorte</strong> (encontrou ou não leishmania), pedida na reunião de 10 ago. 2026;</li>
+      <li>o teste com <strong>imagens inteiras</strong> em 640 e 1080;</li>
+      <li>a detecção restrita a um <strong>raio ao redor dos macrófagos infectados</strong> retornados pelo algoritmo da Emily;</li>
+      <li>a revisão no CVAT de <strong>1.237 falsos positivos de confiança alta</strong> do exp15 que parecem leishmanias reais (lista em <code>05_novos_experimentos/diagnostico_erros_exp15/fp_conf_alta_para_revisar.csv</code>).</li>
+    </ul>
+  </section>
+
+  <section class="card" id="protocolo">
+    <h2>Problema e protocolo</h2>
+    <p class="sub">Etapa 5 do pipeline do grupo:</p>
+    <div class="pipeline">
+      <span>Rafael: detecta e recorta os macrófagos</span><em>→</em>
+      <span>Vivi: filtra os falsos positivos</span><em>→</em>
+      <span>Emily: classifica infectado / não infectado</span><em>→</em>
+      <span>Armando: conta dentro do macrófago</span><em>→</em>
+      <span class="me">Clésio: conta fora do macrófago</span>
+    </div>
+    <ul>
+      <li><strong>Dados brutos:</strong> <a href="../00_dataset_cvat/README.html"><code>00_dataset_cvat/</code></a> (609 imagens 1920×1080), com 8 lâminas anotadas no CVAT e as classes <code>Non-macrophages</code>, <code>macrophage</code>, <code>leishmania</code> (alvo) e <code>inside-macrophage</code> (ignorada).</li>
+      <li><strong>Entrada:</strong> recortes 512×512 centrados em macrófagos infectados (bbox de <code>macrophage</code> que contém o centro de uma anotação <code>inside-macrophage</code>). As anotações foram remapeadas para uma única classe, <code>leishmania</code>.</li>
+      <li><strong>Validação:</strong> 6 folds por lâmina, com 5 lâminas de treino, 1 de validação e 2 de teste. A divisão é a mesma em todos os experimentos.</li>
+    </ul>
+    <div class="table-wrap" style="margin-top:14px"><table id="folds"></table></div>
+    <div class="table-wrap" style="margin-top:14px"><table id="lam"></table></div>
+  </section>
+
+  <section class="card" id="pastas">
+    <h2>Organização das pastas</h2>
+    <p class="sub">A raiz é numerada na ordem do fluxo de trabalho. Cada pasta de dados tem um <code>README.html</code> explicando o conteúdo. Não há arquivos <code>.md</code> no projeto: toda a documentação está em HTML.</p>
+    <h3 class="concl-h">Resumo da organização</h3>
+    <ul>
+      <li>Na raiz de <code>Doutorado/</code> ficam:
+        <ul>
+          <li><code>00_dataset_cvat/</code> (os dados brutos);</li>
+          <li><code>01_preprocessamento/</code> e <code>02_datasets_derivados/</code>, mantidos na raiz para reaproveitar nos novos experimentos;</li>
+          <li>o arquivo <code>instruções reunião doutorado</code>;</li>
+          <li>a pasta <code>06_resumo/</code>, com este resumo (<code>resumo_experimentos.html</code>), a página de pesquisa e os arquivos do menu;</li>
+          <li>a pasta <code>03_experimentos anteriores/</code>;</li>
+          <li><code>04_teste_gpu/</code>, com o notebook que verifica a GPU;</li>
+          <li><code>05_novos_experimentos/</code>, com os experimentos novos (exp10 em diante) e o <a href="../05_novos_experimentos/README.html"><code>README.html</code></a> com o índice, o status e o plano de cada série.</li>
+        </ul>
+      </li>
+      <li>Dentro de <code>03_experimentos anteriores/</code> há:
+        <ul>
+          <li><code>folds_yolo/</code>;</li>
+          <li>uma pasta para cada experimento (<code>exp01_…</code> até <code>exp09_…</code>), com <code>README.html</code>, notebook, <code>figuras/</code> e runs, e um <a href="../03_experimentos%20anteriores/README.html"><code>README.html</code></a> com o índice;</li>
+          <li><code>pesos_pretreinados/</code>;</li>
+          <li><code>legado/</code>, com o script <code>.py</code>, o backup da UFPI, as versões originais dos notebooks de pré-processamento e cerca de 220 saídas soltas de <code>val</code>.</li>
+        </ul>
+      </li>
+      <li>A numeração ficou diferente da que está escrita dentro dos notebooks, porque o YOLO11-large não tinha número e virou o exp03. Por isso, do YOLO26m em diante, o "Exp. N" escrito no notebook corresponde ao exp(N+1) neste resumo.</li>
+    </ul>
+<pre class="tree">Doutorado/
+├── README.md                   página inicial do repositório no GitHub (único .md do projeto)
+├── instruções reunião doutorado
+├── 00_dataset_cvat/             dados brutos (8 lâminas anotadas no CVAT; README.html com classes e números)
+├── 01_preprocessamento/         notebooks que geram os datasets (detalhes no README.html da pasta)
+├── 02_datasets_derivados/       só a sequência usada pelos experimentos atuais
+│   ├── 01_imagens_macrofagos_infectados/   ← 01_filtrar_imagens_infectadas
+│   ├── 02_recortes_512/                    ← 02_gerar_recortes_512
+│   ├── 03_recortes_512_sem_macrofago/      ← 03_mascarar_macrofago_nos_recortes (exp10, 12, 14)
+│   ├── 04_recortes_512_sem_macrofago_reinhard/ ← 04_normalizar_coloracao_reinhard (exp11)
+│   └── 05_recortes_512_macrofago_cor_fundo/    ← 05_mascarar_macrofago_cor_fundo (exp13)
+├── 03_experimentos anteriores/  exp01–exp09
+│   ├── README.html              índice dos exp01–09
+│   ├── exp01_yolo11n/ … exp09_yolo11l_sem_macrofago/   README.html + notebook + figuras/ + runs/fold_1..6
+│   ├── datasets_derivados/      variantes exp06_recortes_512_realce_clahe/ e exp07_recortes_512_lab/
+│   ├── folds_yolo/              estrutura YOLO dos 6 folds (links simbólicos)
+│   ├── pesos_pretreinados/      yolo11n/m/l.pt, yolo26n/m/l.pt
+│   └── legado/                  ver tabela abaixo
+├── 04_teste_gpu/                utilizar-GPU.ipynb (verifica se a GPU está disponível para o PyTorch)
+├── 05_novos_experimentos/       exp10 em diante (README.html com o índice)
+│   ├── executar_fila.sh, fila.log   roda vários notebooks em sequência, desligado do editor
+│   ├── exp11_yolo11n_reinhard/ … exp14_yolo11n_imgsz1024/   mesma estrutura do exp10
+│   ├── exp15_yolo11l_optuna/     idem + optuna/ (estudos.db, melhores_parametros.json)
+│   ├── exp16_yolo11n_params_optuna/   YOLO11n com os parâmetros do exp15
+│   ├── exp17_yolo11n_optuna/     busca do Optuna no próprio YOLO11n
+│   ├── diagnostico_erros_exp15/  tipos de erro do exp15 (melhor modelo), galerias e lista de anotações para revisar
+│   └── exp10_yolov8l_sem_macrofago/
+│       ├── exp10_yolov8l_sem_macrofago.ipynb, README.html, execucao.log, yolov8l.pt
+│       ├── folds_yolo/          estrutura YOLO dos 6 folds (links para 02_datasets_derivados)
+│       └── runs/fold_1..fold_6/ best.pt, last.pt, results.csv, curvas, concluido.txt
+└── 06_resumo/                   este resumo e os arquivos da navegação
+    ├── resumo_experimentos.html  ← este resumo (referência de todos os experimentos)
+    ├── pesquisa.html             aba Pesquisa do menu: busca em todos os READMEs e no resumo
+    ├── menu.js                   barra de menu de todas as páginas (gerado; não editar à mão)
+    ├── indice_pesquisa.js        texto das páginas para a pesquisa (gerado)
+    └── atualizar_menu.py         regera menu.js e indice_pesquisa.js: python 06_resumo/atualizar_menu.py
+                                  (rode após criar ou alterar um README; menu sem dropdown)
+</pre>
+
+    <p class="sub">O que cada notebook de <code>01_preprocessamento/</code> faz (entrada, saída, resultado e em quais experimentos é usado) está em <a href="../01_preprocessamento/README.html"><code>01_preprocessamento/README.html</code></a>. Os datasets gerados estão descritos em <a href="../02_datasets_derivados/README.html"><code>02_datasets_derivados/README.html</code></a>.</p>
+
+    <h3 class="concl-h">03_experimentos anteriores/legado/</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Item</th><th>Conteúdo</th></tr></thead>
+      <tbody>
+        <tr><td><code>preprocessamento_original/</code></td><td>Versões dos notebooks de pré-processamento anteriores à reorganização de 17 nov. 2026, com os nomes e caminhos antigos.</td></tr>
+        <tr><td><code>deteccao-leish.py</code></td><td>Script inicial (yolo12n), que não chegou a gerar resultados registrados.</td></tr>
+        <tr><td><code>runs_val_avulsos/</code></td><td>Cerca de 220 saídas de <code>model.val()</code> geradas pelos notebooks.</td></tr>
+        <tr><td><code>backup_servidor_ufpi/</code></td><td>Notebooks antigos: detecção de macrófago com YOLOv8, divisão 80/20 e filtro de <code>inside-macrophage</code>.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="sub"><strong>Ao reexecutar um notebook de experimento antigo</strong> (exp01–exp09): eles têm caminhos absolutos antigos fixos no código, como <code>/mnt/arquivos/Doutorado/yolo_folds_leishmania</code> e <code>dataset_recortes_macrofagos_infectados</code>. Troque pelos atuais antes de rodar. A correspondência entre nomes antigos e novos está em <code>02_datasets_derivados/README.html</code>. Os links simbólicos e os <code>data.yaml</code> de <code>folds_yolo/</code> já apontam para os locais atuais.</p>
+  </section>
+
+  <footer>Gerado em 17 nov. 2026 e atualizado em 18 nov. 2026 (resultados até o exp17) a partir dos notebooks e dos <code>args.yaml</code> dos treinos.</footer>
+</main>
+<div id="tip" role="tooltip"></div>
+
+<script>
+const EXPS = [
+  { id: "01", nome: "YOLO11n", mask: false, p: [.474,.116], r: [.501,.078], map50: [.439,.123], map5095: [.170,.046],
+    modelo: "YOLO11n (2,6M)", entrada: "recorte original RGB", hp: "imgsz 512, 100 ép., patience 30, batch 16, optimizer auto, aug padrão" },
+  { id: "02", nome: "YOLO11n + P2, 640", mask: false, p: [.467,.098], r: [.492,.076], map50: [.423,.108], map5095: [.164,.041],
+    modelo: "YOLO11n + cabeça P2 (stride 4)", entrada: "recorte original RGB", hp: "imgsz 640, 150 ép., patience 40, cos_lr, scale 0.3" },
+  { id: "03", nome: "YOLO11l", mask: false, p: [.452,.095], r: [.483,.086], map50: [.405,.110], map5095: [.158,.039],
+    modelo: "YOLO11l (25M)", entrada: "recorte original RGB", hp: "imgsz 512, 150 ép., patience 30, aug padrão" },
+  { id: "04", nome: "YOLO26m", mask: false, p: [.460,.108], r: [.489,.057], map50: [.427,.107], map5095: [.166,.040],
+    modelo: "YOLO26m (21,9M)", entrada: "recorte original RGB", hp: "imgsz 640, 150 ép., patience 40, cos_lr, scale 0.3" },
+  { id: "05", nome: "YOLO26l", mask: false, p: [.444,.095], r: [.463,.071], map50: [.394,.100], map5095: [.154,.042],
+    modelo: "YOLO26l (26,3M)", entrada: "recorte original RGB", hp: "idem exp04" },
+  { id: "06", nome: "YOLO11m + CLAHE + aug", mask: false, p: [.458,.113], r: [.517,.065], map50: [.435,.118], map5095: [.167,.039],
+    modelo: "YOLO11m (20M)", entrada: "CLAHE no canal L (Lab), volta para RGB", hp: "imgsz 512, AdamW, lr0 5e-4, cos_lr, aug forte (hsv 0.03/0.9/0.6, rot 15°, flipud 0.5, mixup 0.1)" },
+  { id: "07", nome: "YOLO11l + Lab + batch 4", mask: false, p: [.449,.121], r: [.490,.071], map50: [.407,.118], map5095: [.148,.041],
+    modelo: "YOLO11l", entrada: "Lab puro (L com CLAHE)", hp: "idem exp06, batch 4, nbs 4 (accumulate = 1), jitter de cor desligado" },
+  { id: "08", nome: "YOLO11n sem macrófago", mask: true, p: [.508,.102], r: [.547,.074], map50: [.485,.109], map5095: [.184,.039],
+    modelo: "YOLO11n", entrada: "região do macrófago mascarada", hp: "idem exp06 (AdamW, lr0 5e-4, aug forte), batch 16" },
+  { id: "09", nome: "YOLO11l sem macrófago", mask: true, p: [.510,.136], r: [.551,.100], map50: [.493,.152], map5095: [.192,.059],
+    modelo: "YOLO11l", entrada: "região do macrófago mascarada", hp: "idem exp08, batch 8" },
+  { id: "10", nome: "YOLOv8l sem macrófago", mask: true, p: [.503,.103], r: [.549,.066], map50: [.489,.107], map5095: [.188,.038],
+    modelo: "YOLOv8l (43,6M)", entrada: "região do macrófago mascarada", hp: "idem exp09 (batch 8), só o modelo muda" },
+  { id: "11", nome: "YOLO11n + cor Reinhard", mask: true, p: [.498,.118], r: [.560,.072], map50: [.492,.121], map5095: [.189,.041],
+    modelo: "YOLO11n", entrada: "mascarada + cor normalizada para a leish_7 (Reinhard)", hp: "idem exp08" },
+  { id: "12", nome: "YOLO11n + aumento HED", mask: true, p: [.514,.110], r: [.555,.075], map50: [.496,.124], map5095: [.190,.042],
+    modelo: "YOLO11n", entrada: "região do macrófago mascarada", hp: "idem exp08 + aumento de cor HED (80%, ±0,1 / ±0,02)" },
+  { id: "13", nome: "YOLO11n + máscara cor do fundo", mask: true, p: [.506,.121], r: [.550,.099], map50: [.488,.130], map5095: [.187,.047],
+    modelo: "YOLO11n", entrada: "macrófago preenchido com a cor do fundo", hp: "idem exp08" },
+  { id: "14", nome: "YOLO11n imgsz 1024", mask: true, p: [.505,.128], r: [.554,.084], map50: [.489,.134], map5095: [.199,.052],
+    modelo: "YOLO11n", entrada: "região do macrófago mascarada, ampliada 2×", hp: "idem exp08, imgsz 1024" },
+  { id: "15", nome: "YOLO11l + Optuna", mask: true, p: [.520,.116], r: [.569,.064], map50: [.510,.115], map5095: [.199,.040],
+    modelo: "YOLO11l", entrada: "região do macrófago mascarada", hp: "idem exp09; lr0, weight_decay, hsv_s/v, degrees, scale e mixup escolhidos pelo Optuna em cada fold (8 tentativas × 15 ép., só na lâmina de validação)" },
+  { id: "16", nome: "YOLO11n + params do exp15", mask: true, p: [.525,.110], r: [.566,.055], map50: [.509,.109], map5095: [.196,.039],
+    modelo: "YOLO11n", entrada: "região do macrófago mascarada", hp: "idem exp08 (batch 16), com os 7 hiperparâmetros escolhidos pelo Optuna no exp15 para cada fold (sem nova busca)" },
+  { id: "17", nome: "YOLO11n + Optuna", mask: true, p: [.510,.132], r: [.565,.085], map50: [.495,.144], map5095: [.190,.056],
+    modelo: "YOLO11n", entrada: "região do macrófago mascarada", hp: "idem exp08 (batch 16); 7 hiperparâmetros escolhidos pelo Optuna no próprio nano em cada fold (16 tentativas × 20 ép.; lr0 2e-5–2e-3, degrees 0–45)" },
+];
+const METRIC = { map50: "mAP50", map5095: "mAP50-95", p: "Precisão", r: "Recall" };
+const SLIDES = {
+  leish_1: [.393,.351,.326,.402,.354,.437,.403,.525,.553,.515,.558,.572,.490,.535,.518,.545,.574],
+  leish_2: [.359,.282,.332,.304,.276,.317,.317,.399,.346,.361,.370,.347,.379,.349,.343,.392,.348],
+  leish_3: [.256,.322,.181,.185,.110,.109,.366,.359,.352,.336,.170,.316,.277,.250,.272,.392,.283],
+  leish_4: [.173,.189,.160,.105,.141,.137,.151,.184,.198,.178,.226,.164,.201,.171,.222,.187,.198],
+  leish_5: [.523,.489,.505,.473,.388,.529,.520,.536,.583,.574,.565,.560,.532,.589,.600,.572,.571],
+  leish_7: [.629,.605,.572,.623,.590,.622,.587,.672,.711,.652,.661,.688,.681,.684,.698,.688,.694],
+  leish_8: [.326,.316,.301,.316,.311,.349,.283,.359,.324,.380,.336,.355,.350,.346,.373,.390,.312],
+  leish_9: [.442,.468,.422,.440,.447,.485,.430,.590,.547,.544,.563,.575,.559,.528,.589,.535,.560],
+};
+const LAM = { leish_1: [96,831], leish_2: [127,642], leish_3: [17,10], leish_4: [126,132], leish_5: [361,4725], leish_7: [280,2283], leish_8: [353,992], leish_9: [208,1073] };
+const FOLDS = [
+  [1,"leish_1, 2, 7, 8, 9","leish_4","leish_3, leish_5"],
+  [2,"leish_1, 3, 4, 5, 9","leish_8","leish_2, leish_7"],
+  [3,"leish_2, 3, 4, 5, 7","leish_9","leish_1, leish_8"],
+  [4,"leish_1, 2, 3, 5, 8","leish_7","leish_4, leish_9"],
+  [5,"leish_3, 4, 5, 8, 9","leish_2","leish_1, leish_7"],
+  [6,"leish_3, 4, 5, 7, 9","leish_1","leish_2, leish_8"],
+];
+const PASTA = {"01": "exp01_yolo11n", "02": "exp02_yolo11n_p2", "03": "exp03_yolo11l", "04": "exp04_yolo26m", "05": "exp05_yolo26l", "06": "exp06_yolo11m_realce", "07": "exp07_yolo11l_lab", "08": "exp08_yolo11n_sem_macrofago", "09": "exp09_yolo11l_sem_macrofago", "10": "05_novos_experimentos/exp10_yolov8l_sem_macrofago", "11": "05_novos_experimentos/exp11_yolo11n_reinhard", "12": "05_novos_experimentos/exp12_yolo11n_aumento_hed", "13": "05_novos_experimentos/exp13_yolo11n_mascara_cor_fundo", "14": "05_novos_experimentos/exp14_yolo11n_imgsz1024", "15": "05_novos_experimentos/exp15_yolo11l_optuna", "16": "05_novos_experimentos/exp16_yolo11n_params_optuna", "17": "05_novos_experimentos/exp17_yolo11n_optuna"};
+const f3 = v => v.toFixed(3);
+const BEST = EXPS.reduce((a, b) => b.map50[0] > a.map50[0] ? b : a);   // melhor experimento (maior mAP50)
+document.getElementById("melhor-aviso").innerHTML = `<i></i>Em vermelho em todo o resumo: <span class="best-tag">exp${BEST.id} · ${BEST.nome}</span>, o melhor experimento até agora (mAP50 ${f3(BEST.map50[0])} ± ${f3(BEST.map50[1])}).`;
+
+const $ = id => document.getElementById(id);
+
+/* Tooltip */
+const tip = $("tip");
+function showTip(e, html) {
+  tip.innerHTML = html; tip.style.opacity = 1;
+  const pad = 14, w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = e.clientX + pad, y = e.clientY + pad;
+  if (x + w > innerWidth - 8) x = e.clientX - w - pad;
+  if (y + h > innerHeight - 8) y = e.clientY - h - pad;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+const hideTip = () => { tip.style.opacity = 0; };
+function bindTip(el, html) {
+  el.addEventListener("mousemove", e => showTip(e, html));
+  el.addEventListener("mouseleave", hideTip);
+}
+
+/* Bar chart */
+function drawBars(m) {
+  const vals = EXPS.map(x => x[m][0] + x[m][1]);
+  const max = Math.ceil(Math.max(...vals) * 10) / 10;
+  const step = max > 0.4 ? 0.1 : 0.05;
+  const ticks = [];
+  for (let t = 0; t <= max + 1e-9; t += step) ticks.push(+t.toFixed(2));
+  const pct = v => (v / max * 100) + "%";
+  const bars = $("bars"); bars.innerHTML = "";
+  EXPS.forEach(x => {
+    const [mu, sd] = x[m];
+    const row = document.createElement("div"); row.className = "bar-row" + (x === BEST ? " best" : "");
+    row.innerHTML = `
+      <div class="bar-label"><b>exp${x.id}</b> · ${x.nome}</div>
+      <div class="track">
+        ${ticks.map(t => `<i class="gl" style="left:${pct(t)}"></i>`).join("")}
+        <div class="bar" style="width:${pct(mu)};background:var(${x === BEST ? "--best" : x.mask ? "--series-1" : "--context"})"></div>
+        <div class="whisker" style="left:${pct(Math.max(0, mu - sd))};width:calc(${pct(Math.min(max, mu + sd) - Math.max(0, mu - sd))})"></div>
+        <div class="hit"></div>
+      </div>
+      <div class="bar-val">${f3(mu)} <small>±${f3(sd)}</small></div>`;
+    bars.appendChild(row);
+    bindTip(row.querySelector(".hit"),
+      `<div class="t">exp${x.id} · ${x.nome}</div>
+       <div>${METRIC[m]}: <b>${f3(mu)}</b> ± ${f3(sd)}</div>
+       <div class="m">${x.mask ? "Macrófago mascarado" : "Macrófago visível"}${x === BEST ? " · melhor experimento" : ""}</div>`);
+  });
+  $("ticks").innerHTML = ticks.map(t => `<span style="left:${pct(t)}">${t.toFixed(2)}</span>`).join("");
+}
+document.querySelectorAll(".metric-switch button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".metric-switch button").forEach(o => o.setAttribute("aria-pressed", o === b));
+  drawBars(b.dataset.m);
+}));
+drawBars("map50");
+
+/* Full metrics table */
+(() => {
+  const best = BEST;
+  const colBest = k => Math.max(...EXPS.map(x => x[k][0]));
+  const cell = (x, k) => {
+    const v = x[k][0], s = x[k][1];
+    const strong = v === colBest(k);
+    return `<td class="num">${strong ? "<b>" : ""}${f3(v)}${strong ? "</b>" : ""} <span class="pm">±${f3(s)}</span></td>`;
+  };
+  $("tbl").innerHTML = `<thead><tr><th>Exp.</th><th>Configuração</th><th>Entrada</th>
+    <th class="num">Precisão</th><th class="num">Recall</th><th class="num">mAP50</th><th class="num">mAP50-95</th></tr></thead>
+    <tbody>${EXPS.map(x => `<tr class="${x === best ? "best" : ""}"><td>${x.id}</td><td>${x.nome}</td>
+      <td>${x.mask ? "mascarada" : "visível"}</td>${cell(x,"p")}${cell(x,"r")}${cell(x,"map50")}${cell(x,"map5095")}</tr>`).join("")}</tbody>`;
+})();
+
+/* Heatmap */
+(() => {
+  const all = Object.values(SLIDES).flat();
+  const lo = Math.min(...all), hi = Math.max(...all), N = 7;
+  const bin = v => Math.min(N - 1, Math.floor((v - lo) / (hi - lo) * N));
+  const heat = $("heat");
+  heat.innerHTML = `<div></div>` + EXPS.map(x => `<div class="h ${x.mask ? "mask" : ""} ${x === BEST ? "best" : ""}">${x.id}</div>`).join("");
+  Object.entries(SLIDES).forEach(([lam, vs]) => {
+    const rl = document.createElement("div"); rl.className = "rl"; rl.textContent = lam; heat.appendChild(rl);
+    const rowMax = Math.max(...vs);
+    vs.forEach((v, i) => {
+      const c = document.createElement("div"); c.className = "c" + (EXPS[i] === BEST ? " best" : "");
+      const b = bin(v);
+      c.style.background = `var(--seq-${b})`;
+      const isDark = matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.dataset.theme !== "light"
+        || document.documentElement.dataset.theme === "dark";
+      const lightText = isDark ? b <= 3 : b >= 3;
+      c.style.color = lightText ? "#ffffff" : "#0b0b0b";
+      c.style.fontWeight = v === rowMax ? "700" : "400";
+      c.textContent = v.toFixed(2);
+      heat.appendChild(c);
+      const x = EXPS[i];
+      bindTip(c, `<div class="t">${lam} · exp${x.id}</div><div>mAP50: <b>${f3(v)}</b>${v === rowMax ? " (melhor da lâmina)" : ""}</div>
+        <div class="m">${x.nome} · ${LAM[lam][1]} instâncias</div>`);
+    });
+  });
+  $("ramp").innerHTML = Array.from({ length: N }, (_, i) => `<i style="background:var(--seq-${i})"></i>`).join("");
+})();
+
+/* Config, folds and slides tables */
+$("cfg").innerHTML = `<thead><tr><th>Exp.</th><th>Pasta</th><th>Modelo</th><th>Entrada</th><th>Principais hiperparâmetros</th></tr></thead>
+  <tbody>${EXPS.map(x => `<tr class="${x === BEST ? "best" : ""}"><td>${x.id}</td><td><a href="../${x.id < "10" ? "03_experimentos%20anteriores/" : ""}${PASTA[x.id]}/README.html"><code>${PASTA[x.id]}</code></a></td><td>${x.modelo}</td><td>${x.entrada}</td><td>${x.hp}</td></tr>`).join("")}</tbody>`;
+$("folds").innerHTML = `<thead><tr><th>Fold</th><th>Treino</th><th>Validação</th><th>Teste</th></tr></thead>
+  <tbody>${FOLDS.map(f => `<tr><td>${f[0]}</td><td>${f[1]}</td><td>${f[2]}</td><td>${f[3]}</td></tr>`).join("")}</tbody>`;
+$("lam").innerHTML = `<thead><tr><th>Lâmina</th>${Object.keys(LAM).map(k => `<th class="num">${k}</th>`).join("")}</tr></thead>
+  <tbody><tr><td>Recortes</td>${Object.values(LAM).map(v => `<td class="num">${v[0]}</td>`).join("")}</tr>
+  <tr><td>Instâncias fora do macrófago</td>${Object.values(LAM).map(v => `<td class="num">${v[1] < 200 ? "<b>" + v[1] + "</b>" : v[1]}</td>`).join("")}</tr></tbody>`;
+</script>
+</body>
+</html>

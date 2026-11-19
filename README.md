@@ -11,13 +11,14 @@ Rafael: detecta e recorta os macrófagos → Vivi: filtra os falsos positivos �
 
 ## Principais resultados
 
-Os resultados são de 16 experimentos, com validação cruzada de 6 folds separados por lâmina. As métricas são do conjunto de teste, em média ± desvio padrão entre os folds.
+Os resultados são de 17 experimentos, com validação cruzada de 6 folds separados por lâmina. As métricas são do conjunto de teste, em média ± desvio padrão entre os folds.
 
-1. **Mascarar a região do macrófago foi a única mudança que ajudou de forma clara.** O mAP50 subiu de 0,39–0,44 (exp01–07) para 0,485–0,510 (exp08–16). A máscara tira a confusão entre a amastigota de dentro e a de fora do macrófago.
+1. **Mascarar a região do macrófago foi a única mudança que ajudou de forma clara.** O mAP50 subiu de 0,39–0,44 (exp01–07) para 0,485–0,510 (exp08–17). A máscara tira a confusão entre a amastigota de dentro e a de fora do macrófago.
 2. **O tamanho e a arquitetura do modelo não importaram.** Do YOLO11n (2,6M de parâmetros) ao YOLOv8l (43,6M), passando por YOLO26 e cabeça P2, todos ficaram no mesmo patamar. O **YOLO11n** treina cerca de 5× mais rápido e é o melhor custo-benefício.
 3. **O pré-processamento sobre o recorte mascarado não mudou a média (exp11–14).** Testamos normalização de cor (Reinhard), aumento de cor HED, máscara com a cor do fundo e imgsz 1024. Todos ficaram dentro do ruído, entre +0,002 e +0,011 em relação ao exp08.
-4. **Otimizar os hiperparâmetros com o Optuna (exp15) deu a maior média, mas ainda dentro do ruído.** Com o YOLO11l e busca aninhada em cada fold, o mAP50 foi 0,510 ± 0,115, +0,017 sobre o exp09, com 4 de 6 folds melhores e desvio menor. A busca apontou padrões consistentes: lr0 menor (~1e-4), weight_decay menor, menos jitter de saturação e rotação de ~30°. **Aplicados ao YOLO11n sem nova busca (exp16), esses parâmetros deram 0,509 em 20 minutos**, o mesmo patamar do exp15 (2,5 h) e +0,024 sobre o exp08.
-5. **O limitante principal são os dados.** A variação entre folds (~0,10–0,15) é maior que qualquer ganho obtido. A `leish_4` e a `leish_3` são sempre as piores lâminas, e a `leish_7` sempre a melhor.
+4. **Otimizar os hiperparâmetros com o Optuna (exp15) deu a maior média, mas ainda dentro do ruído.** Com o YOLO11l e busca aninhada em cada fold, o mAP50 foi 0,510 ± 0,115, +0,017 sobre o exp09, com 4 de 6 folds melhores e desvio menor. A busca apontou padrões consistentes: lr0 menor (~1e-4), weight_decay menor, menos jitter de saturação e rotação de ~30°. **Aplicados ao YOLO11n sem nova busca (exp16), esses parâmetros deram 0,509 em 20 minutos**, o mesmo patamar do exp15 (2,5 h) e +0,024 sobre o exp08. Já a busca feita no próprio YOLO11n (exp17) deu 0,495: melhorou a lâmina de validação de cada fold, mas não o teste. Com uma lâmina de validação por fold, a busca tem pouco sinal.
+5. **O detector perde as leishmanias pequenas e apagadas.** O [diagnóstico de erros](05_novos_experimentos/diagnostico_erros_exp15/README.html), feito com o exp15 (melhor modelo), mostrou que o modelo encontra 23% das leishmanias menores que 14 px (24% delas têm menos de 17 px) e 41% das 20% mais apagadas (menor contraste com o fundo), contra 70–74% das de 20 a 29 px e 77% das mais nítidas; as caixas acima de 29 px, anotadas com folga (sobretudo na leish_5), também perdem por localização. A máscara preta não gera erros. Os próximos alvos são o tamanho (ampliar os recortes) e a revisão das anotações.
+6. **O limitante principal são os dados.** A variação entre folds (~0,10–0,15) é maior que qualquer ganho obtido. A `leish_4` e a `leish_3` são sempre as piores lâminas, e a `leish_7` sempre a melhor.
 
 **Melhor configuração até aqui (exp16):** recorte 512×512 com o macrófago mascarado + YOLO11n, imgsz 512, AdamW, cos_lr, 150 épocas, patience 40, flipud 0.5, com os hiperparâmetros escolhidos pelo Optuna no exp15 para cada fold (lr0 ~1e-4, weight_decay ~1e-5 a 1,5e-4, hsv_s ~0,2–0,4, degrees ~30 na maioria). Os valores por fold estão em `05_novos_experimentos/exp15_yolo11l_optuna/optuna/melhores_parametros.json`.
 
@@ -39,6 +40,7 @@ Os resultados são de 16 experimentos, com validação cruzada de 6 folds separa
 | 14 | YOLO11n, imgsz 1024 | mascarado | 0,505 ± 0,128 | 0,554 ± 0,084 | 0,489 ± 0,134 | **0,199 ± 0,052** |
 | 15 | YOLO11l + hiperparâmetros pelo Optuna | mascarado | 0,520 ± 0,116 | 0,569 ± 0,064 | **0,510 ± 0,115** | **0,199 ± 0,040** |
 | 16 | **YOLO11n + hiperparâmetros do exp15** | mascarado | 0,525 ± 0,110 | 0,566 ± 0,055 | 0,509 ± 0,109 | 0,196 ± 0,039 |
+| 17 | YOLO11n + Optuna no próprio nano | mascarado | 0,510 ± 0,132 | 0,565 ± 0,085 | 0,495 ± 0,144 | 0,190 ± 0,056 |
 
 Diferenças menores que ~0,03 de mAP50 estão dentro do ruído entre folds.
 
@@ -70,22 +72,21 @@ Diferenças menores que ~0,03 de mAP50 estão dentro do ruído entre folds.
 
 ```
 ├── README.md                     esta página
-├── resumo_experimentos.html      resumo completo: gráficos, mapa de calor por lâmina, conclusões
-├── menu.js                       barra de menu compartilhada pelas páginas HTML
-├── atualizar_menu.py             regera o menu.js após criar um experimento ou README
 ├── 00_dataset_cvat/              dados brutos do CVAT (só o README no git)
 ├── 01_preprocessamento/          notebooks 01–05 que geram os datasets
 ├── 02_datasets_derivados/        datasets gerados (só os READMEs e as figuras no git)
 ├── 03_experimentos anteriores/   exp01–exp09: notebook, README e métricas de cada um
 ├── 04_teste_gpu/                 notebook que verifica a GPU
-└── 05_novos_experimentos/        exp10 em diante, executar_fila.sh
+├── 05_novos_experimentos/        exp10 em diante, executar_fila.sh
+└── 06_resumo/                    resumo_experimentos.html (resumo completo), pesquisa.html,
+                                  menu.js, indice_pesquisa.js e atualizar_menu.py (regera menu e índice)
 ```
 
 A documentação detalhada está em HTML, com uma barra de menu para navegar entre as páginas. **Abra os arquivos localmente no navegador**, porque o GitHub mostra HTML como código-fonte.
 
 | Página | Conteúdo |
 |---|---|
-| [`resumo_experimentos.html`](resumo_experimentos.html) | Referência central: resultados, gráficos, mapa de calor por lâmina e conclusões |
+| [`06_resumo/resumo_experimentos.html`](06_resumo/resumo_experimentos.html) | Referência central: resultados, gráficos, mapa de calor por lâmina e conclusões |
 | [`01_preprocessamento/README.html`](01_preprocessamento/README.html) | Fluxograma com imagens de exemplo e o que cada notebook faz |
 | [`02_datasets_derivados/README.html`](02_datasets_derivados/README.html) | Os datasets gerados, com exemplos |
 | [`03_experimentos anteriores/README.html`](03_experimentos%20anteriores/README.html) | Índice dos exp01–09 |
@@ -124,3 +125,4 @@ Os caminhos dos notebooks partem de `diretorio_raiz = Path("/mnt/arquivos/Doutor
 - Teste com imagens inteiras, em 640 e 1080.
 - Detecção restrita a um raio em torno dos macrófagos infectados retornados pelo algoritmo da Emily.
 - Usar na máscara as caixas **previstas** pelo detector de macrófagos, e não as anotadas.
+- Revisar no CVAT 1.237 falsos positivos de confiança alta do exp15 que parecem leishmanias reais (`05_novos_experimentos/diagnostico_erros_exp15/fp_conf_alta_para_revisar.csv`).

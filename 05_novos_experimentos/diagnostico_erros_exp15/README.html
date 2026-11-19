@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnóstico de erros</title>
+<style>
+:root{color-scheme:light;--bg:#f6f6f4;--surface:#fcfcfb;--border:#e3e2dd;--grid:#ecebe7;--text:#0b0b0b;--text2:#52514e;--muted:#7a7974;--accent:#2a78d6;--accent-soft:#e8f1fc}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:32px 16px 64px}
+article{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+h1{font-size:1.6rem;margin:0 0 12px;letter-spacing:-.01em}
+h2{font-size:1.15rem;margin:28px 0 8px;padding-top:16px;border-top:1px solid var(--border)}
+h3{font-size:1rem;margin:20px 0 6px}
+p,li{color:var(--text)}
+a{color:var(--accent)}
+.crumb{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums;margin:10px 0}
+.tw{overflow-x:auto}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-weight:600;color:var(--text2);font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
+code{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:.84em;background:var(--grid);padding:1px 5px;border-radius:4px}
+pre{background:var(--grid);padding:14px;border-radius:8px;overflow-x:auto;font-size:.8rem;line-height:1.5}
+pre code{background:none;padding:0}
+strong{font-weight:650}
+td code{overflow-wrap:anywhere;word-break:break-word}
+td{min-width:90px}
+figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radius:8px;border:1px solid var(--border)}figcaption{font-size:.85rem;color:var(--text2);margin-top:6px}
+</style>
+</head>
+<body>
+<!--menu--><script src="../../06_resumo/menu.js"></script><!--/menu-->
+<main>
+<div class="crumb"><a href="../../06_resumo/resumo_experimentos.html">Resumo dos experimentos</a> / <a href="../README.html">05_novos_experimentos</a> / diagnostico_erros_exp15</div>
+<article>
+<h1>Diagnóstico — que erros o detector comete (modelos do exp15)</h1>
+<p><strong>Objetivo:</strong> descobrir <strong>que tipo de erro</strong> o detector comete e em quais leishmanias, usando o modelo de <strong>melhor resultado até agora</strong>: os 6 modelos do <a href="../exp15_yolo11l_optuna/README.html">exp15</a> (YOLO11l + hiperparâmetros do Optuna, mAP50 0,510), cada um nas 2 lâminas de teste do seu fold. Não treina nada; roda na GPU em ~1,5 minuto.</p>
+<p><strong>Como:</strong> predição em todos os recortes de teste; limiar de confiança de maior F1; casamento predição × anotação com IoU ≥ 0,5 (o mesmo critério do mAP50); medidas de cada caixa (tamanho, contraste local, distância até a máscara, borda do recorte, sobreposição com anotações <code>inside-macrophage</code> originais); classificação de cada erro.</p>
+
+<h2>Resumo</h2>
+<ol>
+<li><strong>Leishmanias pequenas são as mais perdidas.</strong> Das menores que 14 px, o modelo encontra 23%; entre 14 e 17 px, 50%; entre 20 e 29 px, 70–74%. As menores que 17 px são 24% de todas as anotadas.</li>
+<li><strong>As caixas muito grandes também perdem, por anotação folgada.</strong> Acima de 29 px o recall cai (52% em 32–35 px), porque o modelo desenha uma caixa justa e a sobreposição com a anotada fica abaixo de 0,5. São 3,2% das anotadas, 75% delas na leish_5.</li>
+<li><strong>Leishmanias apagadas também se perdem.</strong> Das 20% mais apagadas (menor contraste com o fundo), o modelo encontra 41%; das 20% mais nítidas, 77% (detalhes em <a href="#recall-tamanho">Recall por tamanho e por contraste</a>).</li>
+<li><strong>A máscara preta não é fonte de erro.</strong> Falsos positivos e acertos ficam perto da máscara na mesma proporção (7% a até 12 px), e só 7 leishmanias foram perdidas por estarem cobertas por ela.</li>
+<li><strong>As lâminas erram de jeitos diferentes.</strong> A leish_1 perde leishmanias (recall 0,28, precisão 0,75). A leish_8, a leish_4, a leish_2 e a leish_3 detectam coisas a mais (1,7, 1,4, 1,2 e 9,0 falsos positivos por leishmania anotada).</li>
+<li><strong>1.237 falsos positivos de confiança alta</strong> (≥ 0,5, sem anotação próxima), quase todos na leish_5, leish_8 e leish_2. A maioria tem a aparência de amastigota: podem ser anotações faltando. A lista está em <code>fp_conf_alta_para_revisar.csv</code> para revisão no CVAT.</li>
+<li><strong>O modelo é pouco confiante.</strong> O melhor F1 (0,541) fica no limiar 0,15; no limiar padrão de 0,5, o modelo encontra só 21% das leishmanias. Para a futura contagem de amastigotas, o limiar vai precisar ser calibrado.</li>
+</ol>
+
+<h2>Limiar de confiança</h2>
+<div class="tw"><table>
+<thead><tr><th>Limiar</th><th>Acertos</th><th>Falsos positivos</th><th>Perdidas</th><th>Precisão</th><th>Recall</th><th>F1</th></tr></thead>
+<tbody>
+<tr><td>0,10</td><td>10.482</td><td>14.243</td><td>4.954</td><td>0,424</td><td>0,679</td><td>0,522</td></tr>
+<tr><td><strong>0,15</strong> (escolhido)</td><td>9.564</td><td>10.357</td><td>5.872</td><td>0,480</td><td>0,620</td><td><strong>0,541</strong></td></tr>
+<tr><td>0,20</td><td>8.621</td><td>7.967</td><td>6.815</td><td>0,520</td><td>0,558</td><td>0,538</td></tr>
+<tr><td>0,30</td><td>6.764</td><td>4.775</td><td>8.672</td><td>0,586</td><td>0,438</td><td>0,502</td></tr>
+<tr><td>0,50</td><td>3.311</td><td>1.444</td><td>12.125</td><td>0,696</td><td>0,214</td><td>0,328</td></tr>
+</tbody></table></div>
+<p style="font-size:.85rem;color:var(--text2)">Total de 15.436 leishmanias anotadas nas lâminas de teste (as lâminas que aparecem em 2 folds são contadas duas vezes, uma por modelo).</p>
+
+<h2 id="recall-tamanho">Recall por tamanho e por contraste</h2>
+<p>Para cada leishmania anotada nas lâminas de teste, verificamos se o modelo a encontrou ou não (limiar 0,15). Depois separamos as leishmanias em grupos e calculamos, em cada grupo, a porcentagem encontrada (o <strong>recall</strong>).</p>
+
+<h3>Por tamanho</h3>
+<p><strong>Tamanho</strong> é o lado da caixa anotada, em pixels, no recorte de 512 px. Para caixas retangulares, usamos a raiz de largura × altura. As faixas são de 3 em 3 px; acima de 38 px há só 18 leishmanias, então essas ficam juntas.</p>
+<div class="tw"><table>
+<thead><tr><th>Tamanho da caixa</th><th>Leishmanias anotadas</th><th>O modelo encontrou</th><th>Perdidas por caixa mal localizada</th></tr></thead>
+<tbody>
+<tr><td>menor que 14 px</td><td>951</td><td><strong>23%</strong></td><td>17%</td></tr>
+<tr><td>14 a 17 px</td><td>2.799</td><td>50%</td><td>8%</td></tr>
+<tr><td>17 a 20 px</td><td>4.437</td><td>65%</td><td>4%</td></tr>
+<tr><td>20 a 23 px</td><td>3.838</td><td>70%</td><td>3%</td></tr>
+<tr><td>23 a 26 px</td><td>2.107</td><td>74%</td><td>4%</td></tr>
+<tr><td>26 a 29 px</td><td>812</td><td>72%</td><td>9%</td></tr>
+<tr><td>29 a 32 px</td><td>302</td><td>62%</td><td>17%</td></tr>
+<tr><td>32 a 35 px</td><td>126</td><td>52%</td><td>30%</td></tr>
+<tr><td>35 a 38 px</td><td>46</td><td>39%</td><td>37%</td></tr>
+<tr><td>38 px ou mais</td><td>18</td><td>22%</td><td>56%</td></tr>
+</tbody></table></div>
+<p><strong>As pequenas:</strong> quanto menor a leishmania, mais o modelo a perde; das menores que 14 px, encontra menos de 1 em cada 4, e 40% delas ele nem chega a ver. E elas não são raras: <strong>24% das leishmanias anotadas têm menos de 17 px</strong>. Ampliar os recortes 2× faria uma leishmania de 12 px passar a ter 24 px, a faixa em que o modelo acerta mais (~74%).</p>
+<p><strong>As grandes:</strong> o recall também cai acima de 29 px, mas por outro motivo. Nessas faixas, a maior parte das perdidas é <strong>caixa mal localizada</strong>: o modelo vê a leishmania, mas desenha uma caixa de tamanho diferente, e a sobreposição (IoU) com a anotada fica abaixo de 0,5, então o acerto conta como erro. Olhando as caixas de 32 px ou mais, a maioria é uma amastigota isolada de ~20 px anotada com bastante folga; algumas são duas amastigotas juntas numa caixa só. São poucas (492 das 15.436 anotadas, 3,2%), e <strong>75% delas são da leish_5</strong>, o que indica um estilo de anotação diferente nessa lâmina. Padronizar essas caixas na revisão das anotações recuperaria parte desses acertos.</p>
+
+<h3>Por contraste</h3>
+<p><strong>Contraste</strong> mede o quanto a leishmania é mais escura que o fundo em volta dela:</p>
+<ul>
+<li>pegamos o brilho típico (mediana, em níveis de cinza) da área ao redor da caixa;</li>
+<li>pegamos os pixels mais escuros dentro da caixa (percentil 10), que correspondem ao núcleo;</li>
+<li>contraste = brilho do fundo − brilho do núcleo.</li>
+</ul>
+<p>Uma leishmania escura sobre fundo claro tem contraste alto; uma apagada, quase da cor do fundo, tem contraste baixo.</p>
+<p><strong>Quintil:</strong> ordenamos todas as leishmanias pelo contraste e dividimos em 5 grupos de cerca de 20% cada. Os grupos não ficam exatamente iguais porque muitas leishmanias têm o mesmo valor de contraste.</p>
+<div class="tw"><table>
+<thead><tr><th>Grupo de contraste</th><th>Leishmanias anotadas</th><th>O modelo encontrou</th></tr></thead>
+<tbody>
+<tr><td>1º: as 20% mais apagadas</td><td>3.239</td><td><strong>41%</strong></td></tr>
+<tr><td>2º</td><td>2.949</td><td>56%</td></tr>
+<tr><td>3º</td><td>3.344</td><td>67%</td></tr>
+<tr><td>4º</td><td>3.093</td><td>71%</td></tr>
+<tr><td>5º: as 20% mais nítidas</td><td>2.811</td><td>77%</td></tr>
+</tbody></table></div>
+<p>Entre as mais apagadas, o modelo acha cerca de 2 em cada 5; entre as mais nítidas, 3 em cada 4.</p>
+<figure><a href="figuras/recall_tamanho_contraste.png" target="_blank"><img src="figuras/recall_tamanho_contraste.png" alt="Recall por tamanho e contraste"></a>
+<figcaption>Fração das leishmanias anotadas que foram detectadas, no limiar 0,15. Esquerda: pelo lado da caixa anotada, em faixas de 3 px. Direita: pelo contraste local, em 5 grupos de cerca de 20%.</figcaption></figure>
+
+<h2>Tipos de erro (limiar 0,15, todas as lâminas)</h2>
+<div class="tw"><table>
+<thead><tr><th>Erro</th><th>Quantidade</th><th>O que é</th></tr></thead>
+<tbody>
+<tr><td colspan="3"><strong>Falsos negativos: 5.872</strong> (leishmanias anotadas não detectadas)</td></tr>
+<tr><td>não vista</td><td>2.601 (44%)</td><td>nenhuma predição em cima dela</td></tr>
+<tr><td>vista, mas com confiança abaixo do limiar</td><td>1.877 (32%)</td><td>o modelo achou, mas com confiança &lt; 0,15</td></tr>
+<tr><td>caixa mal localizada</td><td>931 (16%)</td><td>predição com IoU entre 0,1 e 0,5</td></tr>
+<tr><td>cortada na borda do recorte</td><td>456 (8%)</td><td>leishmania na borda dos 512 px</td></tr>
+<tr><td>coberta pela máscara</td><td>7 (0,1%)</td><td>mais de 20% da caixa sob a máscara preta</td></tr>
+<tr><td colspan="3"><strong>Falsos positivos: 10.357</strong> (detecções sem leishmania anotada)</td></tr>
+<tr><td>fundo, confiança baixa</td><td>8.212 (79%)</td><td>manchas roxas parecidas com amastigota, confiança &lt; 0,5</td></tr>
+<tr><td>confiança alta, sem anotação</td><td>1.237 (12%)</td><td>candidatos a anotação faltante (galeria abaixo)</td></tr>
+<tr><td>localização</td><td>877 (8%)</td><td>em cima de uma leishmania, mas com IoU &lt; 0,5</td></tr>
+<tr><td>duplicata</td><td>30 (0,3%)</td><td>segunda caixa na mesma leishmania</td></tr>
+<tr><td>junto à máscara</td><td>1</td><td>caixa majoritariamente sobre a máscara preta</td></tr>
+</tbody></table></div>
+
+<h2>Perfil por lâmina</h2>
+<div class="tw"><table>
+<thead><tr><th>Lâmina</th><th>Precisão</th><th>Recall</th><th>FP por anotada</th><th>FP de conf. alta</th><th>Problema principal</th></tr></thead>
+<tbody>
+<tr><td>leish_1</td><td>0,751</td><td><strong>0,283</strong></td><td>0,09</td><td>10</td><td>perde leishmanias apagadas (galeria abaixo)</td></tr>
+<tr><td>leish_2</td><td><strong>0,331</strong></td><td>0,593</td><td><strong>1,20</strong></td><td>227</td><td>falsos positivos, muitos de confiança alta</td></tr>
+<tr><td>leish_3</td><td><strong>0,082</strong></td><td>0,800</td><td><strong>9,00</strong></td><td>23</td><td>falsos positivos (só 10 anotadas)</td></tr>
+<tr><td>leish_4</td><td><strong>0,226</strong></td><td>0,417</td><td><strong>1,42</strong></td><td>5</td><td>falsos positivos</td></tr>
+<tr><td>leish_5</td><td>0,537</td><td>0,694</td><td>0,60</td><td>469</td><td>misto; muitos de confiança alta</td></tr>
+<tr><td>leish_7</td><td>0,644</td><td>0,687</td><td>0,38</td><td>98</td><td>a melhor</td></tr>
+<tr><td>leish_8</td><td><strong>0,276</strong></td><td>0,649</td><td><strong>1,71</strong></td><td>397</td><td>falsos positivos, muitos de confiança alta</td></tr>
+<tr><td>leish_9</td><td>0,564</td><td>0,524</td><td>0,40</td><td>8</td><td>misto</td></tr>
+</tbody></table></div>
+<p style="font-size:.85rem;color:var(--text2)">As lâminas que aparecem em 2 folds de teste (leish_1, 2, 7 e 8) são contadas duas vezes, uma por modelo.</p>
+
+<h2>Falsos positivos perto da máscara e sobre anotações dentro do macrófago</h2>
+<ul>
+<li>A até 12 px da máscara preta ficam 7,2% dos falsos positivos e 7,7% dos acertos: a borda da máscara não gera detecções falsas.</li>
+<li>3,0% dos falsos positivos (5,2% dos de confiança alta) coincidem com uma anotação <code>inside-macrophage</code> original. Ou seja, quase todos os falsos positivos de confiança alta estão fora da região do macrófago.</li>
+</ul>
+
+<h2>Galerias</h2>
+<p>Cada quadro mostra 64×64 px em volta da caixa, ampliado 2×. Título: número da lâmina · confiança (ou tamanho, para os não detectados).</p>
+<figure><a href="figuras/fp_conf_alta.png" target="_blank"><img src="figuras/fp_conf_alta.png" alt="Falsos positivos de confiança alta"></a>
+<figcaption><strong>Falsos positivos de confiança alta.</strong> A maioria tem a forma e a cor de uma amastigota: corpo oval roxo-escuro de ~20 px. Ou a anotação está faltando, ou são amastigotas que o especialista não considerou. Vale revisar no CVAT antes de tirar conclusões sobre a precisão.</figcaption></figure>
+<figure><a href="figuras/fp_fundo.png" target="_blank"><img src="figuras/fp_fundo.png" alt="Falsos positivos comuns"></a>
+<figcaption><strong>Falsos positivos comuns (leish_4 e leish_8).</strong> Manchas roxas de tamanho parecido, mais difusas e sem o contorno nítido da amastigota: restos celulares, borda de outras células, grânulos.</figcaption></figure>
+<figure><a href="figuras/fn_leish_1.png" target="_blank"><img src="figuras/fn_leish_1.png" alt="Leishmanias perdidas na leish_1"></a>
+<figcaption><strong>Leishmanias não detectadas na leish_1.</strong> Muito apagadas e desfocadas, às vezes quase invisíveis sobre o fundo acinzentado.</figcaption></figure>
+<figure><a href="figuras/tp.png" target="_blank"><img src="figuras/tp.png" alt="Acertos"></a>
+<figcaption><strong>Acertos, para comparação.</strong> Corpo oval roxo-escuro, contorno definido, ~20 px.</figcaption></figure>
+
+<h2>O que isso indica</h2>
+<div class="tw"><table>
+<thead><tr><th>Achado</th><th>O que fazer</th><th>Onde</th></tr></thead>
+<tbody>
+<tr><td>Leishmanias pequenas são as mais perdidas</td><td>Ampliar o recorte (o exp14, com imgsz 1024, teve o melhor mAP50-95)</td><td>próxima ideia</td></tr>
+<tr><td>Falsos positivos de confiança alta parecem amastigotas</td><td>Revisar as 1.237 caixas no CVAT</td><td><code>fp_conf_alta_para_revisar.csv</code></td></tr>
+</tbody></table></div>
+
+<h2>Arquivos</h2>
+<div class="tw"><table><tbody>
+<tr><td><strong>Notebook</strong></td><td><code>diagnostico_erros_exp15.ipynb</code> (para outro modelo, troque <code>diretorio_exp</code> e <code>saida</code> na célula de parâmetros)</td></tr>
+<tr><td><strong>Lista para revisão</strong></td><td><code>fp_conf_alta_para_revisar.csv</code>: lâmina, imagem do recorte, fold, confiança, caixa em pixels do recorte 512×512 (x1, y1, x2, y2) e sobreposição com <code>inside-macrophage</code></td></tr>
+<tr><td><strong>Figuras</strong></td><td><code>figuras/</code></td></tr>
+<tr><td><strong>Log</strong></td><td><code>execucao.log</code></td></tr>
+</tbody></table></div>
+</article>
+</main>
+</body>
+</html>

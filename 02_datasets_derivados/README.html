@@ -33,9 +33,9 @@ figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radi
 </style>
 </head>
 <body>
-<!--menu--><script src="../menu.js"></script><!--/menu-->
+<!--menu--><script src="../06_resumo/menu.js"></script><!--/menu-->
 <main>
-<div class="crumb"><a href="../resumo_experimentos.html">Resumo dos experimentos</a> / 02_datasets_derivados</div>
+<div class="crumb"><a href="../06_resumo/resumo_experimentos.html">Resumo dos experimentos</a> / 02_datasets_derivados</div>
 <article>
 <h1>02_datasets_derivados</h1>
 <p>Datasets gerados a partir de <code>00_dataset_cvat/</code> e usados pelos novos experimentos (<strong>exp10 em diante</strong>). <strong>O prefixo de cada pasta é o número do notebook de <code>01_preprocessamento/</code> que a gera.</strong></p>
@@ -53,15 +53,15 @@ figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radi
 </thead>
 <tbody>
 <tr>
-<td><code>01_imagens_macrofagos_infectados/</code></td>
+<td><a href="01_imagens_macrofagos_infectados/README.html"><code>01_imagens_macrofagos_infectados/</code></a></td>
 <td><code>01_preprocessamento/01_filtrar_imagens_infectadas.ipynb</code></td>
-<td><code>00_dataset_cvat/</code></td>
+<td><a href="../00_dataset_cvat/README.html"><code>00_dataset_cvat/</code></a></td>
 <td>599 imagens inteiras (1920×1080) com ao menos um macrófago infectado e os <code>.txt</code> originais</td>
 <td>entrada da etapa 02</td>
 <td>1,4 GB</td>
 </tr>
 <tr>
-<td><code>02_recortes_512/</code></td>
+<td><a href="02_recortes_512/README.html"><code>02_recortes_512/</code></a></td>
 <td><code>01_preprocessamento/02_gerar_recortes_512.ipynb</code></td>
 <td><code>01_imagens_macrofagos_infectados/</code></td>
 <td>1.568 recortes 512×512 centrados em macrófagos infectados, com todas as classes</td>
@@ -69,7 +69,7 @@ figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radi
 <td>402 MB</td>
 </tr>
 <tr>
-<td><code>03_recortes_512_sem_macrofago/</code></td>
+<td><a href="03_recortes_512_sem_macrofago/README.html"><code>03_recortes_512_sem_macrofago/</code></a></td>
 <td><code>01_preprocessamento/03_mascarar_macrofago_nos_recortes.ipynb</code></td>
 <td><code>02_recortes_512/</code></td>
 <td>mesmos 1.568 recortes, com a bbox do macrófago pintada de preto e sem as anotações <code>macrophage</code>/<code>inside-macrophage</code></td>
@@ -77,7 +77,7 @@ figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radi
 <td>351 MB</td>
 </tr>
 <tr>
-<td><code>04_recortes_512_sem_macrofago_reinhard/</code></td>
+<td><a href="04_recortes_512_sem_macrofago_reinhard/README.html"><code>04_recortes_512_sem_macrofago_reinhard/</code></a></td>
 <td><code>01_preprocessamento/04_normalizar_coloracao_reinhard.ipynb</code></td>
 <td><code>03_recortes_512_sem_macrofago/</code></td>
 <td>mesmos recortes do <code>03_</code>, com a coloração de cada lâmina normalizada para a da <code>leish_7</code> (Reinhard por lâmina, espaço Lab); anotações iguais</td>
@@ -85,7 +85,7 @@ figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radi
 <td>433 MB</td>
 </tr>
 <tr>
-<td><code>05_recortes_512_macrofago_cor_fundo/</code></td>
+<td><a href="05_recortes_512_macrofago_cor_fundo/README.html"><code>05_recortes_512_macrofago_cor_fundo/</code></a></td>
 <td><code>01_preprocessamento/05_mascarar_macrofago_cor_fundo.ipynb</code></td>
 <td><code>02_recortes_512/</code></td>
 <td>igual ao <code>03_</code>, mas a bbox do macrófago é preenchida com a cor mediana do fundo do recorte, e não com preto; anotações iguais</td>

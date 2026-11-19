@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pesquisa</title>
+<style>
+:root{color-scheme:light;--bg:#f6f6f4;--surface:#fcfcfb;--border:#e3e2dd;--grid:#ecebe7;--text:#0b0b0b;--text2:#52514e;--muted:#7a7974;--accent:#2a78d6;--accent-soft:#e8f1fc;--mark:#fde68a}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d;--mark:#6b5310}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d;--mark:#6b5310}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:32px 16px 64px}
+article{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+h1{font-size:1.6rem;margin:0 0 12px;letter-spacing:-.01em}
+a{color:var(--accent)}
+.crumb{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+code{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:.84em;background:var(--grid);padding:1px 5px;border-radius:4px}
+#q{width:100%;font:inherit;font-size:1.05rem;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)}
+#q:focus{outline:2px solid var(--accent);outline-offset:1px}
+.dica{color:var(--muted);font-size:.85rem;margin:8px 0 0}
+#status{color:var(--text2);font-size:.9rem;margin:18px 0 6px}
+.pag{padding:14px 0;border-top:1px solid var(--border)}
+.pag h2{font-size:1.02rem;margin:0 0 2px}
+.pag h2 a{text-decoration:none}
+.pag h2 a:hover{text-decoration:underline}
+.caminho{color:var(--muted);font-size:.78rem;font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;overflow-wrap:anywhere}
+.sec{margin:8px 0 0 0;padding-left:12px;border-left:3px solid var(--grid)}
+.sec a{font-weight:600;font-size:.9rem;text-decoration:none}
+.sec a:hover{text-decoration:underline}
+.trecho{color:var(--text2);font-size:.88rem;margin:2px 0 0}
+mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
+.mais{color:var(--muted);font-size:.82rem;margin:6px 0 0 12px}
+</style>
+</head>
+<body>
+<!--menu--><script src="menu.js"></script><!--/menu-->
+<main>
+<div class="crumb"><a href="resumo_experimentos.html">Resumo dos experimentos</a> / Pesquisa</div>
+<article>
+<h1>Pesquisa</h1>
+<input id="q" type="search" placeholder="Ex.: optuna, leish_1, contraste, imgsz 1024" autocomplete="off" autofocus aria-label="Termos da pesquisa">
+<p class="dica">Procura em todos os READMEs e no resumo. Não diferencia maiúsculas nem acentos. Com várias palavras, mostra as seções que têm todas elas. O índice é gerado por <code>python 06_resumo/atualizar_menu.py</code>.</p>
+<div id="status"></div>
+<div id="res"></div>
+</article>
+</main>
+<script src="indice_pesquisa.js"></script>
+<script>
+(function () {
+  var campo = document.getElementById('q'), status = document.getElementById('status'), res = document.getElementById('res');
+  var indice = typeof INDICE_PESQUISA !== 'undefined' ? INDICE_PESQUISA : [];
+
+  // Normaliza caractere a caractere, preservando o comprimento, para poder destacar no texto original.
+  function norm(t) {
+    var s = '';
+    for (var i = 0; i < t.length; i++) {
+      var c = t[i].normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+      s += c.length === 1 ? c : t[i].toLowerCase().charAt(0) || ' ';
+    }
+    return s;
+  }
+  function esc(t) { return t.replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
+  function url(p) { return '../' + p.split('/').map(encodeURIComponent).join('/'); }   // caminhos do índice são relativos à raiz
+  function conta(h, t) { var n = 0, i = h.indexOf(t); while (i >= 0) { n++; i = h.indexOf(t, i + t.length); } return n; }
+
+  // Pré-normaliza o índice uma vez.
+  var secoes = [];
+  indice.forEach(function (p) {
+    p[2].forEach(function (s) {
+      secoes.push({pag: p[0], tit: p[1], cab: s[0], id: s[1], txt: s[2], nTit: norm(p[1] + ' ' + p[0]), nCab: norm(s[0]), nTxt: norm(s[2])});
+    });
+  });
+
+  function destaca(texto, termos) {
+    var n = norm(texto), marcas = [];
+    termos.forEach(function (t) { var i = n.indexOf(t); while (i >= 0) { marcas.push([i, i + t.length]); i = n.indexOf(t, i + t.length); } });
+    marcas.sort(function (a, b) { return a[0] - b[0]; });
+    var out = '', pos = 0;
+    marcas.forEach(function (m) { if (m[0] < pos) return; out += esc(texto.slice(pos, m[0])) + '<mark>' + esc(texto.slice(m[0], m[1])) + '</mark>'; pos = m[1]; });
+    return out + esc(texto.slice(pos));
+  }
+  function trecho(s, termos) {
+    var i = -1;
+    termos.forEach(function (t) { var j = s.nTxt.indexOf(t); if (j >= 0 && (i < 0 || j < i)) i = j; });
+    if (i < 0) return s.txt.slice(0, 200) + (s.txt.length > 200 ? '…' : '');
+    var a = Math.max(0, i - 90), b = Math.min(s.txt.length, i + 160);
+    while (a > 0 && s.txt[a - 1] !== ' ') a--;
+    while (b < s.txt.length && s.txt[b] !== ' ') b++;
+    return (a > 0 ? '…' : '') + s.txt.slice(a, b) + (b < s.txt.length ? '…' : '');
+  }
+  function link(s) {
+    if (s.id) return url(s.pag) + '#' + s.id;
+    if (s.cab) return url(s.pag) + '#:~:text=' + encodeURIComponent(s.cab);
+    return url(s.pag);
+  }
+
+  function pesquisa() {
+    var q = campo.value.trim();
+    try { history.replaceState(null, '', q ? '?q=' + encodeURIComponent(q) : location.pathname); } catch (e) {}
+    var termos = norm(q).split(/\s+/).filter(Boolean);
+    if (!termos.length) { status.textContent = indice.length ? indice.length + ' páginas no índice.' : 'Índice não encontrado: rode python atualizar_menu.py.'; res.innerHTML = ''; return; }
+    var porPag = {}, ordem = [];
+    secoes.forEach(function (s) {
+      var tudo = s.nTit + ' ' + s.nCab + ' ' + s.nTxt;
+      if (!termos.every(function (t) { return tudo.indexOf(t) >= 0; })) return;
+      var nota = 0;
+      termos.forEach(function (t) { nota += conta(s.nTxt, t) + 5 * conta(s.nCab, t) + 3 * conta(s.nTit, t); });
+      if (!porPag[s.pag]) { porPag[s.pag] = {tit: s.tit, pag: s.pag, secs: [], nota: 0}; ordem.push(porPag[s.pag]); }
+      porPag[s.pag].secs.push({s: s, nota: nota});
+      porPag[s.pag].nota += nota;
+    });
+    ordem.sort(function (a, b) { return b.nota - a.nota; });
+    var nSec = ordem.reduce(function (n, p) { return n + p.secs.length; }, 0);
+    status.textContent = ordem.length ? nSec + ' seção(ões) em ' + ordem.length + ' página(s).' : 'Nada encontrado.';
+    var h = '';
+    ordem.forEach(function (p) {
+      p.secs.sort(function (a, b) { return b.nota - a.nota; });
+      h += '<div class="pag"><h2><a href="' + url(p.pag) + '">' + destaca(p.tit, termos) + '</a></h2><div class="caminho">' + esc(p.pag) + '</div>';
+      p.secs.slice(0, 4).forEach(function (x) {
+        var s = x.s;
+        h += '<div class="sec"><a href="' + link(s) + '">' + (s.cab ? destaca(s.cab, termos) : 'Início da página') + '</a>'
+           + '<p class="trecho">' + destaca(trecho(s, termos), termos) + '</p></div>';
+      });
+      if (p.secs.length > 4) h += '<p class="mais">+ ' + (p.secs.length - 4) + ' seção(ões) nesta página</p>';
+      h += '</div>';
+    });
+    res.innerHTML = h;
+  }
+
+  var espera;
+  campo.addEventListener('input', function () { clearTimeout(espera); espera = setTimeout(pesquisa, 120); });
+  var inicial = new URLSearchParams(location.search).get('q');
+  if (inicial) campo.value = inicial;
+  pesquisa();
+})();
+</script>
+</body>
+</html>

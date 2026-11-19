@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experimento 17</title>
+<style>
+:root{color-scheme:light;--bg:#f6f6f4;--surface:#fcfcfb;--border:#e3e2dd;--grid:#ecebe7;--text:#0b0b0b;--text2:#52514e;--muted:#7a7974;--accent:#2a78d6;--accent-soft:#e8f1fc}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#121211;--surface:#1a1a19;--border:#2f2f2c;--grid:#262624;--text:#f0efec;--text2:#c3c2b7;--muted:#8f8e86;--accent:#3987e5;--accent-soft:#1b2a3d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:32px 16px 64px}
+article{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+h1{font-size:1.6rem;margin:0 0 12px;letter-spacing:-.01em}
+h2{font-size:1.15rem;margin:28px 0 8px;padding-top:16px;border-top:1px solid var(--border)}
+h3{font-size:1rem;margin:20px 0 6px}
+p,li{color:var(--text)}
+a{color:var(--accent)}
+.crumb{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums;margin:10px 0}
+.tw{overflow-x:auto}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-weight:600;color:var(--text2);font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
+code{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:.84em;background:var(--grid);padding:1px 5px;border-radius:4px}
+pre{background:var(--grid);padding:14px;border-radius:8px;overflow-x:auto;font-size:.8rem;line-height:1.5}
+pre code{background:none;padding:0}
+strong{font-weight:650}
+td code{overflow-wrap:anywhere;word-break:break-word}
+td{min-width:90px}
+figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radius:8px;border:1px solid var(--border)}figcaption{font-size:.85rem;color:var(--text2);margin-top:6px}
+</style>
+</head>
+<body>
+<!--menu--><script src="../../06_resumo/menu.js"></script><!--/menu-->
+<main>
+<div class="crumb"><a href="../../06_resumo/resumo_experimentos.html">Resumo dos experimentos</a> / <a href="../README.html">05_novos_experimentos</a> / exp17_yolo11n_optuna</div>
+<article>
+<h1>exp17 — YOLO11n com hiperparâmetros otimizados pelo Optuna</h1>
+<p><strong>Objetivo:</strong> fazer a busca do Optuna <strong>diretamente no YOLO11n</strong>, em vez de reaproveitar os parâmetros achados com o YOLO11l. Bases: <a href="../../03_experimentos%20anteriores/exp08_yolo11n_sem_macrofago/README.html">exp08</a> (YOLO11n, hiperparâmetros à mão; 0,485 ± 0,109) e <a href="../exp16_yolo11n_params_optuna/README.html">exp16</a> (YOLO11n com os parâmetros do <a href="../exp15_yolo11l_optuna/README.html">exp15</a>; 0,509 ± 0,109).</p>
+<p><strong>Perguntas:</strong></p>
+<ol>
+<li>Uma busca feita no próprio nano encontra parâmetros melhores que os herdados do YOLO11l?</li>
+<li>O nano é ~4× mais rápido por época. Uma busca maior (16 tentativas de 20 épocas, contra 8 de 15 no exp15) compensa?</li>
+</ol>
+
+<h2>Por que o dataset com o macrófago preto</h2>
+<p>Os dois datasets mascarados deram o mesmo resultado com o YOLO11n: preto (exp08) 0,485 e cor do fundo (<a href="../exp13_yolo11n_mascara_cor_fundo/README.html">exp13</a>) 0,488. Com o preto, que é o dataset dos exp08, 09, 15 e 16, o exp17 difere do exp16 só pela busca e do exp15 só pelo modelo. Com a cor do fundo, dois fatores mudariam ao mesmo tempo.</p>
+
+<h2>O que é o Optuna</h2>
+<p>O Optuna é um framework de <strong>otimização automática de hiperparâmetros</strong>. Em vez de testar combinações à mão, ele faz isto:</p>
+<ol>
+<li>propõe uma combinação de hiperparâmetros (uma <strong>tentativa</strong>);</li>
+<li>treina o modelo com ela e mede o resultado (aqui, o mAP50 na lâmina de validação);</li>
+<li>usa o histórico de todas as tentativas para escolher a próxima, e repete.</li>
+</ol>
+<ul>
+<li><strong>Amostrador TPE</strong> (<em>Tree-structured Parzen Estimator</em>): separa as tentativas em boas e ruins e sorteia as próximas onde as boas se concentram. As 3 primeiras tentativas de cada fold exploram o espaço; depois a busca se concentra nas regiões promissoras.</li>
+<li><strong>Poda (MedianPruner)</strong>: a cada época, uma tentativa com mAP50 abaixo da mediana das anteriores na mesma época é interrompida, para não gastar tempo com combinações ruins. As 3 primeiras tentativas e as 5 primeiras épocas de cada uma nunca são interrompidas.</li>
+<li><strong>Estudo</strong>: o conjunto de tentativas de uma busca. Fica salvo num banco SQLite (<code>optuna/estudos.db</code>); se a execução parar, a busca continua de onde estava.</li>
+</ul>
+
+
+<h2>O que muda em relação ao exp15</h2>
+<div class="tw"><table>
+<thead><tr><th></th><th>exp15</th><th>exp17</th></tr></thead>
+<tbody>
+<tr><td>Modelo, batch</td><td>YOLO11l, 8</td><td>YOLO11n, 16</td></tr>
+<tr><td>Tentativas × épocas por fold</td><td>8 × 15</td><td>16 × 20</td></tr>
+<tr><td>Tentativas fixas no início</td><td>exp09</td><td>exp08 e os parâmetros do exp15 para o mesmo fold</td></tr>
+<tr><td><code>lr0</code></td><td>1e-4 a 2e-3</td><td><strong>2e-5</strong> a 2e-3 (no exp15, 5 de 6 folds pararam em 1e-4)</td></tr>
+<tr><td><code>degrees</code></td><td>0 a 30</td><td>0 a <strong>45</strong> (no exp15, 4 de 6 folds pararam em ~30)</td></tr>
+<tr><td>Amostrador e poda</td><td>TPE 3 iniciais; poda após 3 tentativas e 5 épocas</td><td>TPE 5 iniciais; poda após 4 tentativas e 6 épocas</td></tr>
+</tbody></table></div>
+<p>As outras faixas são as mesmas do exp15: <code>weight_decay</code> 1e-5 a 1e-3 (log), <code>hsv_s</code> 0,2 a 0,9, <code>hsv_v</code> 0,2 a 0,7, <code>scale</code> 0,2 a 0,6, <code>mixup</code> 0 a 0,3. O protocolo é aninhado e sem vazamento: cada fold escolhe os parâmetros só com a sua lâmina de validação, depois treina 150 épocas (patience 40) e é avaliado nas 2 lâminas de teste.</p>
+<p>Como as tentativas 1 e 2 são o exp08 e os parâmetros do exp15, o Optuna só troca essas configurações se achar algo melhor na validação.</p>
+
+<div class="tw"><table><tbody>
+<tr><td><strong>Notebook</strong></td><td><code>exp17_yolo11n_optuna.ipynb</code></td></tr>
+<tr><td><strong>Dataset</strong></td><td><code>02_datasets_derivados/03_recortes_512_sem_macrofago/</code></td></tr>
+<tr><td><strong>Saídas da busca</strong></td><td><code>optuna/estudos.db</code>, <code>optuna/melhores_parametros.json</code>, <code>figuras/importancia_hiperparametros.png</code></td></tr>
+<tr><td><strong>Status</strong></td><td>concluído em 18 nov. 2026 (14h55–16h08, 1h13: busca + treino final)</td></tr>
+</tbody></table></div>
+
+<h2>Exemplos das imagens de entrada</h2>
+<figure><a href="figuras/entrada_sem_macrofago.jpg" target="_blank"><img src="figuras/entrada_sem_macrofago.jpg" alt="Recortes originais e mascarados"></a>
+<figcaption>Mesma entrada dos exp08, 09, 15 e 16. <strong>Em cima:</strong> recorte original com todas as anotações. <strong>Embaixo:</strong> o que a rede recebe, com o macrófago pintado de preto. <span class="legenda-cores"><i style="border-color:#ffd400"></i>leishmania fora do macrófago (alvo)<i style="border-color:#ff8c00"></i>leishmania dentro do macrófago<i style="border-color:#ff0000"></i>macrófago</span></figcaption></figure>
+
+<h2>Resultado</h2>
+<div class="tw"><table>
+<thead><tr><th></th><th>Hiperparâmetros</th><th>Precisão</th><th>Recall</th><th>mAP50</th><th>mAP50-95</th><th>Tempo</th></tr></thead>
+<tbody>
+<tr><td><strong>exp17</strong></td><td>busca do Optuna no YOLO11n</td><td>0,510 ± 0,132</td><td>0,565 ± 0,085</td><td><strong>0,495 ± 0,144</strong></td><td>0,190 ± 0,056</td><td>1h13</td></tr>
+<tr><td>exp16</td><td>herdados do exp15 (YOLO11l)</td><td>0,525 ± 0,110</td><td>0,566 ± 0,055</td><td>0,509 ± 0,109</td><td>0,196 ± 0,039</td><td>20 min</td></tr>
+<tr><td>exp08</td><td>à mão</td><td>0,508 ± 0,102</td><td>0,547 ± 0,074</td><td>0,485 ± 0,109</td><td>0,184 ± 0,039</td><td>~20 min</td></tr>
+</tbody></table></div>
+<p><strong>Conclusões:</strong></p>
+<ul>
+<li><strong>Respostas às duas perguntas: não.</strong> A busca feita no próprio nano não superou os parâmetros herdados do YOLO11l (0,495 contra 0,509 do exp16), e a busca maior não compensou. Contra o exp08, o ganho foi de +0,010, dentro do ruído.</li>
+<li><strong>A validação melhorou, o teste não.</strong> Em todos os 6 folds, a busca achou uma configuração melhor na lâmina de validação do que as duas tentativas fixas (exp08 e exp15). No teste, porém, só o fold 5 melhorou em relação ao exp16. A busca está se ajustando às particularidades da <strong>única lâmina de validação</strong> de cada fold.</li>
+<li><strong>O pior caso é o fold 6</strong> (validação leish_1, teste leish_2 e leish_8): 0,289 contra 0,403 no exp16. A busca escolheu lr0 alto (1,1e-3) e quase sem rotação, e a melhor época foi a 13. A leish_1 (fundo acinzentado) não representa as lâminas de teste.</li>
+<li><strong>Sem os padrões do exp15.</strong> No exp15, os folds concordavam (lr0 ~1e-4, rotação ~30°). Aqui as escolhas se espalharam: lr0 de 1,2e-4 a 1,4e-3, e rotação abaixo de 9° em 5 folds. Com a faixa ampliada, o lr0 deixou de ficar no limite.</li>
+<li><strong>Consequência:</strong> com uma lâmina de validação por fold, a busca de hiperparâmetros tem pouco sinal a explorar. O ganho do exp16 sobre o exp08 (+0,024) também pode ser em parte sorte. Para buscas futuras, valeria validar em mais de uma lâmina (por exemplo, validação cruzada interna nas 5 lâminas de treino), o que multiplica o custo. Este resultado reforça a decisão de investir no pré-processamento.</li>
+</ul>
+
+<h3>Busca por fold</h3>
+<div class="tw"><table>
+<thead><tr><th>Fold</th><th>Validação</th><th>Podadas</th><th>Val. exp08</th><th>Val. parâm. exp15</th><th>Val. melhor</th><th>Épocas (melhor)</th><th>Teste exp17</th><th>exp16</th><th>exp08</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>leish_4</td><td>7 de 16</td><td>0,208</td><td>0,232</td><td>0,251</td><td>110 (83)</td><td>0,568</td><td>0,569</td><td>0,534</td></tr>
+<tr><td>2</td><td>leish_8</td><td>9 de 16</td><td>0,340</td><td>0,351</td><td>0,385</td><td>62 (56)</td><td>0,610</td><td>0,641</td><td>0,574</td></tr>
+<tr><td>3</td><td>leish_9</td><td>5 de 16</td><td>0,590</td><td>0,589</td><td>0,634</td><td>115 (57)</td><td>0,374</td><td>0,372</td><td>0,354</td></tr>
+<tr><td>4</td><td>leish_7</td><td>8 de 16</td><td>0,643</td><td>0,668</td><td>0,682</td><td>78 (48)</td><td>0,469</td><td>0,472</td><td>0,476</td></tr>
+<tr><td>5</td><td>leish_2</td><td>7 de 16</td><td>0,401</td><td>0,413</td><td>0,449</td><td>61 (21)</td><td><strong>0,658</strong></td><td>0,596</td><td>0,612</td></tr>
+<tr><td>6</td><td>leish_1</td><td>8 de 16</td><td>0,551</td><td>0,561</td><td>0,592</td><td>53 (13)</td><td><strong>0,289</strong></td><td>0,403</td><td>0,360</td></tr>
+</tbody></table></div>
+<p style="font-size:.85rem;color:var(--text2)">"Val." = mAP50 na lâmina de validação durante a busca (20 épocas). A poda interrompeu 44 das 96 tentativas.</p>
+
+<h3>O que o Optuna escolheu</h3>
+<div class="tw"><table>
+<thead><tr><th>Fold</th><th>lr0</th><th>weight_decay</th><th>hsv_s</th><th>hsv_v</th><th>degrees</th><th>scale</th><th>mixup</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>4,1e-4</td><td>3,3e-4</td><td>0,56</td><td>0,35</td><td>8,5</td><td>0,38</td><td>0,17</td></tr>
+<tr><td>2</td><td>3,3e-4</td><td>4,0e-5</td><td>0,67</td><td>0,50</td><td>0,7</td><td>0,21</td><td>0,08</td></tr>
+<tr><td>3</td><td>1,2e-4</td><td>4,7e-4</td><td>0,44</td><td>0,38</td><td>6,8</td><td>0,29</td><td>0,26</td></tr>
+<tr><td>4</td><td>8,6e-4</td><td>1,2e-4</td><td>0,28</td><td>0,51</td><td>28,1</td><td>0,31</td><td>0,23</td></tr>
+<tr><td>5</td><td>1,4e-3</td><td>1,5e-4</td><td>0,47</td><td>0,20</td><td>0,5</td><td>0,20</td><td>0,00</td></tr>
+<tr><td>6</td><td>1,1e-3</td><td>2,9e-4</td><td>0,75</td><td>0,33</td><td>2,4</td><td>0,28</td><td>0,30</td></tr>
+<tr><td><em>exp08</em></td><td><em>5,0e-4</em></td><td><em>5,0e-4</em></td><td><em>0,90</em></td><td><em>0,60</em></td><td><em>15</em></td><td><em>0,50</em></td><td><em>0,10</em></td></tr>
+</tbody></table></div>
+<p>O único padrão comum aos dois experimentos com Optuna é <code>scale</code> menor que o do exp08 (0,20–0,38 contra 0,50) e <code>hsv_s</code> menor que 0,9.</p>
+<figure><a href="figuras/importancia_hiperparametros.png" target="_blank"><img src="figuras/importancia_hiperparametros.png" alt="Importância dos hiperparâmetros" style="max-width:640px"></a>
+<figcaption>Importância de cada hiperparâmetro para o mAP50 na validação (fANOVA do Optuna, média dos 6 folds).</figcaption></figure>
+
+<h3>Por lâmina (mAP50 no teste)</h3>
+<div class="tw"><table>
+<thead><tr><th>Lâmina</th><th>exp17</th><th>exp16</th><th>exp08</th></tr></thead>
+<tbody>
+<tr><td>leish_1</td><td><strong>0,574</strong></td><td>0,545</td><td>0,525</td></tr>
+<tr><td>leish_2</td><td>0,348</td><td>0,392</td><td>0,399</td></tr>
+<tr><td>leish_3</td><td>0,283</td><td>0,392</td><td>0,359</td></tr>
+<tr><td>leish_4</td><td>0,198</td><td>0,187</td><td>0,184</td></tr>
+<tr><td>leish_5</td><td>0,571</td><td>0,572</td><td>0,536</td></tr>
+<tr><td>leish_7</td><td>0,694</td><td>0,688</td><td>0,672</td></tr>
+<tr><td>leish_8</td><td>0,312</td><td>0,390</td><td>0,359</td></tr>
+<tr><td>leish_9</td><td>0,560</td><td>0,535</td><td>0,590</td></tr>
+</tbody></table></div>
+<p>A leish_1 teve o maior valor da série (0,574). A leish_8 e a leish_2 caíram, ambas no fold 6.</p>
+</article>
+</main>
+</body>
+</html>

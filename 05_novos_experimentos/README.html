@@ -32,9 +32,9 @@ details>summary{cursor:pointer;font-weight:600;padding:6px 0}
 </style>
 </head>
 <body>
-<!--menu--><script src="../menu.js"></script><!--/menu-->
+<!--menu--><script src="../06_resumo/menu.js"></script><!--/menu-->
 <main>
-<div class="crumb"><a href="../resumo_experimentos.html">Resumo dos experimentos</a> / 05_novos_experimentos</div>
+<div class="crumb"><a href="../06_resumo/resumo_experimentos.html">Resumo dos experimentos</a> / 05_novos_experimentos</div>
 <article>
 <h1>Novos experimentos</h1>
 <p>exp10 em diante. Clique no número para abrir o README do experimento. Os anteriores (exp01–09) estão em <a href="../03_experimentos%20anteriores/README.html"><code>03_experimentos anteriores/</code></a>.</p>
@@ -50,6 +50,7 @@ details>summary{cursor:pointer;font-weight:600;padding:6px 0}
 <tr><td><a href="exp14_yolo11n_imgsz1024/README.html"><strong>exp14</strong></a></td><td>Entrada 1024</td><td>exp08</td><td>0,489 ± 0,134</td><td>+0,004</td><td>concluído</td></tr>
 <tr><td><a href="exp15_yolo11l_optuna/README.html"><strong>exp15</strong></a></td><td>YOLO11l + hiperparâmetros pelo Optuna</td><td>exp09</td><td><strong>0,510 ± 0,115</strong></td><td>+0,017</td><td>concluído</td></tr>
 <tr><td><a href="exp16_yolo11n_params_optuna/README.html"><strong>exp16</strong></a></td><td>YOLO11n + hiperparâmetros do exp15</td><td>exp08</td><td><strong>0,509 ± 0,109</strong></td><td>+0,024</td><td>concluído</td></tr>
+<tr><td><a href="exp17_yolo11n_optuna/README.html"><strong>exp17</strong></a></td><td>YOLO11n + busca do Optuna no próprio nano</td><td>exp08</td><td>0,495 ± 0,144</td><td>+0,010</td><td>concluído</td></tr>
 </tbody></table></div>
 <p style="font-size:.85rem;color:var(--text2)">Bases: exp08 = 0,485 ± 0,109 · exp09 = 0,493 ± 0,152. <strong>|Δ| &lt; 0,03 está dentro do ruído</strong> (o desvio entre folds é ~0,10).</p>
 
@@ -61,19 +62,27 @@ details>summary{cursor:pointer;font-weight:600;padding:6px 0}
 <li><strong>Resultado:</strong> nenhum dos quatro passou do ruído (Δ de +0,002 a +0,011). Destaques: o exp11 (Reinhard) teve o melhor valor da série na leish_4 (0,226), e o exp14 (1024) teve o melhor mAP50-95 (0,199). A máscara continua sendo o único ganho claro.</li>
 </ul>
 
-<h2>exp15–16: Optuna</h2>
+<h2>exp15–17: Optuna</h2>
 <ul>
 <li>Modelo fixo no YOLO11l (o do exp09). O Optuna escolhe, <strong>em cada fold</strong>, 7 hiperparâmetros usando só a lâmina de validação do fold (8 tentativas de 15 épocas). Depois cada fold é treinado no regime completo e avaliado no teste.</li>
 <li><strong>Resultado:</strong> maior mAP50 da série (0,510), mas +0,017 sobre o exp09 ainda está no ruído. Melhorou 4 de 6 folds e reduziu o desvio (0,152 → 0,115). Levou 2,5 h.</li>
 <li><strong>Padrões úteis:</strong> todos os folds preferiram lr0 menor (~1e-4, no limite da faixa), weight_decay menor, menos jitter de saturação (hsv_s ~0,2–0,4) e, em 4 de 6, rotação de ~30°.</li>
 <li><strong>exp16:</strong> os parâmetros do exp15 aplicados ao YOLO11n, sem nova busca, deram 0,509 em 20 minutos, praticamente igual ao exp15 (2,5 h) e +0,024 sobre o exp08. O ganho vem dos hiperparâmetros, não do modelo. Essa é a nova base sugerida.</li>
-<li>Próximo: os mesmos parâmetros em outros modelos de YOLO, sem nova busca.</li>
+<li><strong>exp17:</strong> a busca feita no próprio nano (16 × 20) deu 0,495, abaixo do exp16. Melhorou a validação em todos os folds, mas não o teste: com uma única lâmina de validação por fold, a busca se ajusta a ela. As escolhas não repetiram os padrões do exp15. Conclusão: busca de hiperparâmetros tem pouco sinal com estes dados; o foco passa ao pré-processamento.</li>
+</ul>
+
+<h2>Diagnóstico de erros</h2>
+<ul>
+<li><a href="diagnostico_erros_exp15/README.html"><strong>Diagnóstico de erros do exp15</strong></a> (o modelo de melhor resultado): as leishmanias pequenas e as apagadas são as mais perdidas: das menores que 14 px o modelo encontra 23%, e das 20% mais apagadas (menor contraste com o fundo), 41%, contra 70–77% das de 20 a 29 px e das nítidas. As caixas acima de 29 px, anotadas com folga (75% na leish_5), também perdem por localização. A máscara preta não gera erros. 1.237 falsos positivos de confiança alta parecem leishmanias reais (lista para revisar no CVAT).</li>
+<li>Os próximos alvos sugeridos pelo diagnóstico são o <strong>tamanho</strong> (ampliar os recortes) e a <strong>revisão das anotações</strong>.</li>
 </ul>
 
 <h2>Próximas ideias</h2>
 <ul>
 <li>Máscara com as bboxes <strong>previstas</strong> pelo detector de macrófagos, e não com as anotadas.</li>
 <li>Imagens inteiras em blocos sobrepostos (SAHI).</li>
+<li>Ampliar os recortes 2× (imgsz 1024) com a configuração do exp16: as leishmanias pequenas são as mais perdidas.</li>
+<li>Revisar no CVAT os 1.237 falsos positivos de confiança alta do exp15 (<code>diagnostico_erros_exp15/fp_conf_alta_para_revisar.csv</code>).</li>
 <li>Amostragem balanceada por lâmina (a leish_5 tem 44% das instâncias).</li>
 <li>Copy-paste de amastigotas.</li>
 <li>Revisar as anotações da leish_4 e da leish_2.</li>
@@ -95,11 +104,11 @@ details>summary{cursor:pointer;font-weight:600;padding:6px 0}
 <pre><code>setsid nohup papermill -k python3 --cwd . expNN.ipynb expNN.ipynb &gt; execucao.log 2&gt;&amp;1 &amp;</code></pre>
 <p><strong>Vários em sequência</strong> (início e fim em <code>fila.log</code>):</p>
 <pre><code>setsid nohup ./executar_fila.sh exp11_… exp12_… &gt; fila.log 2&gt;&amp;1 &lt; /dev/null &amp; disown</code></pre>
-<p><strong>Depois de criar um experimento</strong>, na raiz do projeto (regera o <code>menu.js</code>; os outros READMEs não são alterados):</p>
-<pre><code>python atualizar_menu.py</code></pre>
+<p><strong>Depois de criar um experimento</strong>, na raiz do projeto (regera o <code>menu.js</code> e o índice da aba Pesquisa; os outros READMEs não são alterados). Rode também depois de alterar um README, para a pesquisa encontrar o texto novo. O item <em>Novos experimentos</em> do menu abre esta página: ao registrar um experimento, acrescente a linha (com link) na tabela acima.</p>
+<pre><code>python 06_resumo/atualizar_menu.py</code></pre>
 <ul>
 <li>Um fold só conta como pronto se existir <code>runs/fold_N/concluido.txt</code>; folds interrompidos são refeitos.</li>
-<li>Resultados também vão para o <a href="../resumo_experimentos.html">resumo</a>.</li>
+<li>Resultados também vão para o <a href="../06_resumo/resumo_experimentos.html">resumo</a>.</li>
 </ul>
 </details>
 </article>

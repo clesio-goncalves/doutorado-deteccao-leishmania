@@ -45,9 +45,9 @@ figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radi
 </style>
 </head>
 <body>
-<!--menu--><script src="../menu.js"></script><!--/menu-->
+<!--menu--><script src="../06_resumo/menu.js"></script><!--/menu-->
 <main>
-<div class="crumb"><a href="../resumo_experimentos.html">Resumo dos experimentos</a> / 01_preprocessamento</div>
+<div class="crumb"><a href="../06_resumo/resumo_experimentos.html">Resumo dos experimentos</a> / 01_preprocessamento</div>
 <article>
 <h1>01_preprocessamento</h1>
 <p>Notebooks que transformam as anotações brutas do CVAT (<a href="../00_dataset_cvat/README.html"><code>00_dataset_cvat/</code></a>) nos datasets usados pelos experimentos (<code>02_datasets_derivados/</code>). Rode na ordem numérica. O número de cada notebook é o mesmo da pasta que ele gera em <code>02_datasets_derivados/</code>.</p>
@@ -79,7 +79,7 @@ figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radi
 <tbody>
 <tr><td><a href="#nb01"><code>01_filtrar_imagens_infectadas.ipynb</code></a></td><td><code>00_dataset_cvat/</code> → <code>01_imagens_macrofagos_infectados/</code></td><td>599 de 609 imagens (1920×1080)</td><td>entrada da etapa 02</td></tr>
 <tr><td><a href="#nb02"><code>02_gerar_recortes_512.ipynb</code></a></td><td><code>01_imagens_macrofagos_infectados/</code> → <code>02_recortes_512/</code></td><td>1.568 recortes · 10.688 instâncias de <code>leishmania</code></td><td>exp01–exp05; entrada das etapas 03 e 05</td></tr>
-<tr><td><a href="#nb03"><code>03_mascarar_macrofago_nos_recortes.ipynb</code></a></td><td><code>02_recortes_512/</code> → <code>03_recortes_512_sem_macrofago/</code></td><td>1.568 recortes · 339 sem anotação (servem de negativos)</td><td>exp08, exp09, exp10, exp12, exp14; entrada da etapa 04</td></tr>
+<tr><td><a href="#nb03"><code>03_mascarar_macrofago_nos_recortes.ipynb</code></a></td><td><code>02_recortes_512/</code> → <code>03_recortes_512_sem_macrofago/</code></td><td>1.568 recortes · 339 sem anotação (servem de negativos)</td><td>exp08–10, exp12, exp14–17; entrada das etapas 04, 06 e 07</td></tr>
 <tr><td><a href="#nb04"><code>04_normalizar_coloracao_reinhard.ipynb</code></a></td><td><code>03_recortes_512_sem_macrofago/</code> → <code>04_recortes_512_sem_macrofago_reinhard/</code></td><td>1.568 recortes · o canal verde médio entre lâminas passou de 77–124 para 77–83</td><td>exp11</td></tr>
 <tr><td><a href="#nb05"><code>05_mascarar_macrofago_cor_fundo.ipynb</code></a></td><td><code>02_recortes_512/</code> → <code>05_recortes_512_macrofago_cor_fundo/</code></td><td>1.568 recortes · anotações idênticas às da etapa 03 (conferidas arquivo a arquivo)</td><td>exp13</td></tr>
 </tbody></table></div>
@@ -96,6 +96,16 @@ figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radi
 <h3 id="nb02">02 · Gerar os recortes 512×512</h3>
 <p><code>02_gerar_recortes_512.ipynb</code></p>
 <p>Para cada macrófago infectado (bbox <code>macrophage</code> que contém o centro de um <code>inside-macrophage</code>), gera um recorte 512×512 centrado nele. Se o recorte sairia da imagem, a janela é deslocada para dentro, sem esticar. As anotações de todas as classes são recalculadas para o recorte e cortadas na borda. No fim, mostra uma grade de 100 recortes para conferência visual.</p>
+<p><strong>Por que 512×512:</strong> por causa do tamanho dos macrófagos. O recorte precisa conter o macrófago infectado inteiro e mais uma faixa em volta, onde ficam as amastigotas extracelulares próximas a ele. Medidas dos 1.568 macrófagos infectados nas imagens 1920×1080 (maior lado da bbox):</p>
+<div class="tw"><table>
+<thead><tr><th>Mediana</th><th>90%</th><th>99%</th><th>Máximo</th></tr></thead>
+<tbody><tr><td>169 px</td><td>237 px</td><td>302 px</td><td>393 px</td></tr></tbody></table></div>
+<ul>
+<li><strong>Cabem todos:</strong> até o maior macrófago (393 px) cabe inteiro, com pelo menos ~60 px de margem de cada lado. Um macrófago típico (169 px) fica com ~170 px de entorno de cada lado. Com 256 px, 5,5% dos macrófagos já não caberiam.</li>
+<li><strong>Sem redimensionar:</strong> o recorte entra na YOLO no tamanho original (<code>imgsz</code> 512, múltiplo de 32, que é o passo da rede). Reduzir a imagem diminuiria as leishmanias, que têm só ~20 px.</li>
+<li><strong>Cabe na imagem:</strong> 512 é menor que a altura da imagem (1080), então a janela sempre pode ser deslocada para dentro sem esticar.</li>
+</ul>
+<p style="font-size:.85rem;color:var(--text2)">O motivo não tinha ficado registrado quando os recortes foram criados (ago. 2026). Esta explicação foi reconstruída em 18 nov. 2026 e confirmada pelas medidas acima.</p>
 <ul>
 <li><strong>Entrada:</strong> <code>01_imagens_macrofagos_infectados/</code></li>
 <li><strong>Saída:</strong> <code>02_recortes_512/</code></li>
@@ -153,6 +163,7 @@ figure{margin:14px 0}figure img{display:block;width:100%;height:auto;border-radi
 <li>Na reorganização, as etapas 02 e 03 foram executadas de novo numa pasta temporária, e o resultado foi <strong>byte a byte idêntico</strong> aos datasets existentes. Os notebooks 01 a 03 rodam com os caminhos atuais.</li>
 <li>18 nov. 2026: a explicação de cada arquivo, antes no resumo dos experimentos, passou a ficar só aqui.</li>
 <li>18 nov. 2026: criadas as etapas 04 (normalização de cor) e 05 (máscara com a cor do fundo), para os exp11 e exp13.</li>
+<li>18 nov. 2026: registrada a justificativa do tamanho 512×512 (seção 02).</li>
 <li>As versões originais estão em <code>03_experimentos anteriores/legado/preprocessamento_original/</code>.</li>
 </ul>
 </article>
